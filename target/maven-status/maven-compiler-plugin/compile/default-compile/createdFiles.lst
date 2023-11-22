@@ -1,0 +1,5 @@
+com\levthedev\mc\managers\DatabaseManager.class
+com\levthedev\mc\commands\CommandBase.class
+com\levthedev\mc\coordinators\DatabaseCoordinator.class
+com\levthedev\mc\coordinators\DatabaseCoordinatorImpl.class
+com\levthedev\mc\GoblinsPlunder.class

@@ -1,0 +1,15 @@
+name: GoblinsPlunder
+version: 0.0.1
+main: com.levthedev.mc.GoblinsPlunder
+description: A simple Spigot plugin example
+
+commands:
+  gp:
+    description: Goblins Plunder
+    usage: /gp
+    permission: goblinsplunder.base
+
+permissions:
+  goblinsplunder:
+    description: Allows using the hello command
+    default: true
