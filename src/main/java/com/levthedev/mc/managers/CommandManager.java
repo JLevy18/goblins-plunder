@@ -7,6 +7,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import com.levthedev.mc.listeners.AddPlunderListener;
 import com.levthedev.mc.subcommands.AddCommand;
 import com.levthedev.mc.subcommands.HelpCommand;
 import com.levthedev.mc.subcommands.SubCommand;
@@ -14,9 +15,10 @@ import com.levthedev.mc.subcommands.SubCommand;
 public class CommandManager implements CommandExecutor {
 
     private final ArrayList<SubCommand> commands = new ArrayList<>();
+    private AddPlunderListener plunderListener;
 
-
-    public CommandManager(){
+    public CommandManager(AddPlunderListener plunderListener){
+        this.plunderListener = plunderListener;
         commands.add(new HelpCommand());
         commands.add(new AddCommand());
     }
@@ -31,17 +33,17 @@ public class CommandManager implements CommandExecutor {
             // Base command passed
             if (args.length == 0) {
                 HelpCommand help = new HelpCommand();
-                help.execute(player, args);
+                help.execute(player, args, plunderListener);
                 return true;
             }
             
 
             // Sub command passed
             if (args.length > 0) {
-                
+
                 for (SubCommand subcommand : commands){
                     if (args[0].equalsIgnoreCase(subcommand.getName())){
-                        subcommand.execute(player, args);
+                        subcommand.execute(player, args, plunderListener);
                         return true;
                     }
                 }

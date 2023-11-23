@@ -8,28 +8,28 @@ import java.sql.Statement;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.Plugin;
 
-import com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse.File;
 import com.levthedev.mc.coordinators.DatabaseCoordinator;
 import com.levthedev.mc.coordinators.DatabaseCoordinatorImpl;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
 public class DatabaseManager {
-
+    
+    private static Plugin plugin;
     private static DatabaseManager instance;
     private HikariDataSource dataSource;
     private final DatabaseCoordinator databaseCoordinator;
 
-    private DatabaseManager(Plugin plugin) {
+    public DatabaseManager() {
 
         try {
             setupDataSource(plugin.getConfig());
-        } catch (SQLException e) {
+        } catch (Exception e) {
             if (DatabaseNotFoundException(e)){
                 createDatabase(plugin.getConfig());
                 try {
                     setupDataSource(plugin.getConfig());
-                } catch (SQLException ex) {
+                } catch (Exception ex) {
                     throw new RuntimeException("Failed to establish a database connection after creation", ex);
                 }
             } else {
@@ -38,39 +38,21 @@ public class DatabaseManager {
         }
         
 
-
-
         // Coordinator
-        this.databaseCoordinator = new DatabaseCoordinatorImpl(dataSource);
+        this.databaseCoordinator = new DatabaseCoordinatorImpl(dataSource, plugin);
 
     }
 
-    private void createDatabase(FileConfiguration pluginConfig) {
-        try (Connection conn = DriverManager.getConnection("jdbc:mysql://" + pluginConfig.getString("datasource.host") + ":" + pluginConfig.getInt("datasource.port"), pluginConfig.getString("datasource.username"), pluginConfig.getString("datasource.password"));
-             Statement stmt = conn.createStatement()) {
-            stmt.executeUpdate("CREATE DATABASE IF NOT EXISTS goblins_plunder");
-        } catch (SQLException e) {
-            throw new RuntimeException("Failed to create database", e);
-        }
+
+    public static void initialize(Plugin pluginInstance) {
+        plugin = pluginInstance;
+        instance = new DatabaseManager();
+        instance.getDatabaseCoordinator().setup();
     }
 
-    private void setupDataSource(FileConfiguration pluginConfig) throws SQLException{
-        HikariConfig config = new HikariConfig();
-        config.setJdbcUrl("jdbc:mysql://" + pluginConfig.getString("datasource.host") + ":" + pluginConfig.getInt("datasource.port") + "/goblins_plunder");
-        config.setUsername(pluginConfig.getString("datasource.username"));
-        config.setPassword(pluginConfig.getString("datasource.password"));
-
-        this.dataSource = new HikariDataSource(config);
-    }
-
-    private boolean DatabaseNotFoundException(Exception e){
-        return e.getMessage().contains("Unknown database");
-    }
-
-
-    public static synchronized DatabaseManager getInstance(Plugin plugin) {
+    public static synchronized DatabaseManager getInstance() {
         if (instance == null) {
-            instance = new DatabaseManager(plugin);
+            throw new IllegalStateException("DatabaseManager not initialized");
         }
 
         return instance;
@@ -92,5 +74,26 @@ public class DatabaseManager {
         }
     }
 
-    
+    private void createDatabase(FileConfiguration pluginConfig) {
+        try (Connection conn = DriverManager.getConnection("jdbc:mysql://" + pluginConfig.getString("datasource.host") + ":" + pluginConfig.getInt("datasource.port"), pluginConfig.getString("datasource.username"), pluginConfig.getString("datasource.password"));
+             Statement stmt = conn.createStatement()) {
+            stmt.executeUpdate("CREATE DATABASE IF NOT EXISTS goblins_plunder");
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to create database", e);
+        }
+    }
+
+    private void setupDataSource(FileConfiguration pluginConfig) throws Exception{
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl("jdbc:mysql://" + pluginConfig.getString("datasource.host") + ":" + pluginConfig.getInt("datasource.port") + "/goblins_plunder");
+        config.setUsername(pluginConfig.getString("datasource.username"));
+        config.setPassword(pluginConfig.getString("datasource.password"));
+
+        this.dataSource = new HikariDataSource(config);
+    }
+
+    private boolean DatabaseNotFoundException(Exception e){
+        return e.getMessage().contains("Unknown database");
+    }
+
 }

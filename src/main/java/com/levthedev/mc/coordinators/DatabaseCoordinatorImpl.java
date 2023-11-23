@@ -1,17 +1,26 @@
 package com.levthedev.mc.coordinators;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
+
 import com.zaxxer.hikari.HikariDataSource;
+
 
 public class DatabaseCoordinatorImpl implements DatabaseCoordinator {
     private final HikariDataSource dataSource;
+    private final Plugin plugin;
 
-    public DatabaseCoordinatorImpl(HikariDataSource dataSource) {
+    public DatabaseCoordinatorImpl(HikariDataSource dataSource, Plugin plugin) {
         this.dataSource = dataSource;
+        this.plugin = plugin;
     }
 
     @Override
@@ -57,6 +66,23 @@ public class DatabaseCoordinatorImpl implements DatabaseCoordinator {
                            "FOREIGN KEY (pb_id) REFERENCES plunder_blocks(id));";
             stmt.executeUpdate(query);
         }
+    }
+
+    public void createPlunderData(String blockId, String location, String blockType, Player player) {
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            String sql = "INSERT INTO plunder_blocks (id, location, block_type) VALUES (?, ?, ?)";
+            try (Connection conn = dataSource.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, blockId);
+                stmt.setString(2, location);
+                stmt.setString(3, blockType);
+                stmt.executeUpdate();
+            } catch (SQLException e) {
+
+                player.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "Database Error");
+                e.printStackTrace(); // Handle exception
+            }
+        });
     }
 
 }
