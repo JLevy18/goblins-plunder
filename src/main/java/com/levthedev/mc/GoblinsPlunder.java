@@ -2,7 +2,7 @@ package com.levthedev.mc;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.levthedev.mc.commands.CommandBase;
+import com.levthedev.mc.managers.CommandManager;
 import com.levthedev.mc.managers.DatabaseManager;
 
 public final class GoblinsPlunder extends JavaPlugin {
@@ -25,7 +25,7 @@ public final class GoblinsPlunder extends JavaPlugin {
 
     // Register commands for plugin
     private void registerCommands(){
-        this.getCommand("gp").setExecutor(new CommandBase());
+        this.getCommand("gp").setExecutor(new CommandManager());
     }
     
 }

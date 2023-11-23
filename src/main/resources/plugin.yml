@@ -7,9 +7,4 @@ commands:
   gp:
     description: Goblins Plunder
     usage: /gp
-    permission: goblinsplunder.base
-
-permissions:
-  goblinsplunder:
-    description: Allows using the hello command
-    default: true
+    aliases: [goblinsplunder]

@@ -5,7 +5,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import com.mysql.cj.jdbc.DatabaseMetaData;
 import com.zaxxer.hikari.HikariDataSource;
 
 public class DatabaseCoordinatorImpl implements DatabaseCoordinator {

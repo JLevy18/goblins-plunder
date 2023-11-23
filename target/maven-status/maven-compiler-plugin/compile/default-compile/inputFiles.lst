@@ -1,5 +1,8 @@
 F:\Documents\VSCode Workspace\goblins-plunder\src\main\java\com\levthedev\mc\coordinators\DatabaseCoordinator.java
-F:\Documents\VSCode Workspace\goblins-plunder\src\main\java\com\levthedev\mc\commands\CommandBase.java
+F:\Documents\VSCode Workspace\goblins-plunder\src\main\java\com\levthedev\mc\subcommands\HelpCommand.java
+F:\Documents\VSCode Workspace\goblins-plunder\src\main\java\com\levthedev\mc\managers\CommandManager.java
+F:\Documents\VSCode Workspace\goblins-plunder\src\main\java\com\levthedev\mc\subcommands\AddCommand.java
 F:\Documents\VSCode Workspace\goblins-plunder\src\main\java\com\levthedev\mc\coordinators\DatabaseCoordinatorImpl.java
 F:\Documents\VSCode Workspace\goblins-plunder\src\main\java\com\levthedev\mc\GoblinsPlunder.java
+F:\Documents\VSCode Workspace\goblins-plunder\src\main\java\com\levthedev\mc\subcommands\SubCommand.java
 F:\Documents\VSCode Workspace\goblins-plunder\src\main\java\com\levthedev\mc\managers\DatabaseManager.java
