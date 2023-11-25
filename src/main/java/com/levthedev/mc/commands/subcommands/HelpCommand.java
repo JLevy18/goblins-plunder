@@ -1,9 +1,11 @@
-package com.levthedev.mc.subcommands;
+package com.levthedev.mc.commands.subcommands;
 
-import org.bukkit.Bukkit;
+import java.util.Map;
+
 import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
 
-import com.levthedev.mc.listeners.AddPlunderListener;
+import com.levthedev.mc.commands.SubCommand;
 
 public class HelpCommand extends SubCommand {
 
@@ -23,7 +25,7 @@ public class HelpCommand extends SubCommand {
     }
 
     @Override
-    public void execute(Player player, String[] args, AddPlunderListener addPlunderListener) {
+    public void execute(Player player, String[] args, Map<String,Listener> listeners) {
         player.sendMessage(
             
         "==========[Goblins Plunder Help]===========\n" +

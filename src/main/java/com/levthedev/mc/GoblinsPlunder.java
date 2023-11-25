@@ -1,22 +1,42 @@
 package com.levthedev.mc;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.levthedev.mc.listeners.AddPlunderListener;
+import com.levthedev.mc.listeners.AddListener;
+import com.levthedev.mc.listeners.GetListener;
 import com.levthedev.mc.managers.CommandManager;
 import com.levthedev.mc.managers.DatabaseManager;
 
 public final class GoblinsPlunder extends JavaPlugin {
 
 
-    AddPlunderListener addPlunderListener = new AddPlunderListener();
+    private static GoblinsPlunder instance;
+
+    Map<String,Listener> listeners = new HashMap<String,Listener>();
+
+    public static synchronized GoblinsPlunder getInstance() {
+        if (instance == null) {
+            throw new IllegalStateException("GoblinsPlunder not initialized");
+        }
+
+        return instance;
+    }
+
+    public GoblinsPlunder() {
+        listeners.put("add", new AddListener());
+        listeners.put("get", new GetListener());
+    }
 
 
     @Override
     public void onEnable(){
-        
+        instance = this;
         // Initialize all the things
-        DatabaseManager.initialize(this);
+        DatabaseManager.initialize();
         registerCommands();
         registerListeners();
     }
@@ -26,15 +46,16 @@ public final class GoblinsPlunder extends JavaPlugin {
         DatabaseManager.getInstance().closePool();
     }
 
-
-
     // Register commands for plugin
     private void registerCommands() {
-        this.getCommand("gp").setExecutor(new CommandManager(addPlunderListener));
+        this.getCommand("gp").setExecutor(new CommandManager(listeners));
     }
 
     private void registerListeners() {
-        getServer().getPluginManager().registerEvents(addPlunderListener, this);
+        for (Map.Entry<String,Listener> entry : listeners.entrySet()) {
+            getServer().getPluginManager().registerEvents(entry.getValue(), instance);
+        }
+
     }
     
 }
