@@ -138,6 +138,7 @@ public class DatabaseManager {
                            "id VARCHAR(36) PRIMARY KEY," +
                            "location VARCHAR(255) NOT NULL UNIQUE," +
                            "block_type VARCHAR(255) NOT NULL," +
+                           "loot_table_key VARCHAR(255), " +
                            "contents BLOB);";
             stmt.executeUpdate(query);
         }

@@ -7,11 +7,13 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.levthedev.mc.listeners.AddListener;
+import com.levthedev.mc.listeners.GeneratedStructuresListener;
 import com.levthedev.mc.listeners.GetListener;
 import com.levthedev.mc.managers.CommandManager;
 import com.levthedev.mc.managers.DatabaseManager;
 
 public final class GoblinsPlunder extends JavaPlugin {
+
 
 
     private static GoblinsPlunder instance;
@@ -39,6 +41,7 @@ public final class GoblinsPlunder extends JavaPlugin {
         DatabaseManager.initialize();
         registerCommands();
         registerListeners();
+        getServer().getPluginManager().registerEvents(new GeneratedStructuresListener(), instance);
     }
 
     @Override

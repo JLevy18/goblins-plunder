@@ -1,4 +1,5 @@
 com\levthedev\mc\commands\subcommands\GetCommand.class
+com\levthedev\mc\listeners\GeneratedStructuresListener.class
 com\levthedev\mc\listeners\AddListener.class
 com\levthedev\mc\utility\Serializer.class
 com\levthedev\mc\commands\subcommands\HelpCommand.class
