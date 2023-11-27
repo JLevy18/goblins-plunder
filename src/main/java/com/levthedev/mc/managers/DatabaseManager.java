@@ -15,7 +15,6 @@ import org.bukkit.entity.Player;
 
 import com.levthedev.mc.GoblinsPlunder;
 import com.levthedev.mc.coordinators.DatabaseCoordinator;
-import com.levthedev.mc.coordinators.DatabaseCoordinator;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
@@ -161,17 +160,18 @@ public class DatabaseManager {
     // ##########################
 
 
-    public void createPlunderData(String blockId, String location, String blockType, Blob contents, Player player) {
+    public void createPlunderData(String blockId, String location, String blockType, String loot_table_key, Blob contents, Player player) {
 
 
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            String sql = "INSERT INTO plunder_blocks (id, location, block_type, contents) VALUES (?, ?, ?, ?)";
+            String sql = "INSERT INTO plunder_blocks (id, location, block_type, loot_table_key, contents) VALUES (?, ?, ?, ?, ?)";
             try (Connection conn = dataSource.getConnection();
                  PreparedStatement stmt = conn.prepareStatement(sql)) {
                 stmt.setString(1, blockId);
                 stmt.setString(2, location);
                 stmt.setString(3, blockType);
-                stmt.setBlob(4, contents);
+                stmt.setString(4, loot_table_key);
+                stmt.setBlob(5, contents);
                 stmt.executeUpdate();
 
                 player.sendMessage(ChatColor.BOLD + "" + ChatColor.DARK_GREEN + "Plunder successfully created: " + ChatColor.RESET + "" + ChatColor.GREEN + blockId);

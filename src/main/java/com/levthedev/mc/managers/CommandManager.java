@@ -1,7 +1,6 @@
 package com.levthedev.mc.managers;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import org.bukkit.command.Command;
@@ -12,7 +11,6 @@ import org.bukkit.event.Listener;
 
 import com.levthedev.mc.commands.SubCommand;
 import com.levthedev.mc.commands.subcommands.AddCommand;
-import com.levthedev.mc.commands.subcommands.GetCommand;
 import com.levthedev.mc.commands.subcommands.HelpCommand;
 
 public class CommandManager implements CommandExecutor {
@@ -24,7 +22,6 @@ public class CommandManager implements CommandExecutor {
         this.listeners = listeners;
         commands.add(new HelpCommand());
         commands.add(new AddCommand());
-        commands.add(new GetCommand());
     }
 
 

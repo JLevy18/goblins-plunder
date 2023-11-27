@@ -61,6 +61,8 @@
                             <target>
                                 <copy file="${project.build.directory}/${project.artifactId}-${project.version}.jar"
                                     tofile="F:/Documents/Spigot/Server/plugins/${project.artifactId}-${project.version}.jar" />
+                                <copy file="${project.build.directory}/${project.artifactId}-${project.version}.jar"
+                                    tofile="F:/Documents/VSCode Workspace/goblins-plunder/${project.artifactId}-${project.version}.jar" />
                             </target>
                         </configuration>
                         <goals>

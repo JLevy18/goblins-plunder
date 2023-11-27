@@ -5,3 +5,7 @@ datasource:
   username: "root"
   password: ""
   poolSize: 10
+
+debug: enabled
+
+messages:

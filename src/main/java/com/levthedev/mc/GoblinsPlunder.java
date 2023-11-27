@@ -7,10 +7,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.levthedev.mc.listeners.AddListener;
-import com.levthedev.mc.listeners.GeneratedStructuresListener;
-import com.levthedev.mc.listeners.GetListener;
 import com.levthedev.mc.managers.CommandManager;
 import com.levthedev.mc.managers.DatabaseManager;
+import com.levthedev.mc.managers.TabCompleteManager;
 
 public final class GoblinsPlunder extends JavaPlugin {
 
@@ -30,18 +29,18 @@ public final class GoblinsPlunder extends JavaPlugin {
 
     public GoblinsPlunder() {
         listeners.put("add", new AddListener());
-        listeners.put("get", new GetListener());
     }
 
 
     @Override
     public void onEnable(){
-        instance = this;
+
         // Initialize all the things
+        instance = this;
+        saveDefaultConfig();
         DatabaseManager.initialize();
         registerCommands();
         registerListeners();
-        getServer().getPluginManager().registerEvents(new GeneratedStructuresListener(), instance);
     }
 
     @Override
@@ -52,6 +51,7 @@ public final class GoblinsPlunder extends JavaPlugin {
     // Register commands for plugin
     private void registerCommands() {
         this.getCommand("gp").setExecutor(new CommandManager(listeners));
+        this.getCommand("gp").setTabCompleter(new TabCompleteManager());
     }
 
     private void registerListeners() {

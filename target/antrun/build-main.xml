@@ -2,5 +2,6 @@
 <project name="maven-antrun-" default="main">
   <target name="main">
     <copy file="F:\Documents\VSCode Workspace\goblins-plunder\target/GoblinsPlunder-0.2.0.jar" tofile="F:/Documents/Spigot/Server/plugins/GoblinsPlunder-0.2.0.jar" />
+    <copy file="F:\Documents\VSCode Workspace\goblins-plunder\target/GoblinsPlunder-0.2.0.jar" tofile="F:/Documents/VSCode Workspace/goblins-plunder/GoblinsPlunder-0.2.0.jar" />
   </target>
 </project>
