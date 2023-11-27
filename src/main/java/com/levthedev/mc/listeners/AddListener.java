@@ -14,7 +14,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.loot.LootTable;
 
-import com.levthedev.mc.GoblinsPlunder;
 import com.levthedev.mc.managers.DatabaseManager;
 import com.levthedev.mc.utility.LootTablesOverworld;
 
@@ -51,9 +50,10 @@ public class AddListener implements Listener {
                     
                     Container container = (Container) clickedBlock.getState();
 
-                    String[] keySplit = loot.getKey().split(":");
-
                     if (loot != null){
+
+                        String[] keySplit = loot.getKey().split(":");
+
                         NamespacedKey lootKey = new NamespacedKey(keySplit[0], keySplit[1]);
                         LootTable lootTable = Bukkit.getLootTable(lootKey);
                         System.out.println(lootTable);
@@ -63,9 +63,6 @@ public class AddListener implements Listener {
             
                             chest.setLootTable(lootTable);
                             chest.update();
-                            
-                            
-                            //System.out.println("GP-DEBUG: " + chest.getLootTable().getKey());
 
                         }
             
@@ -79,6 +76,8 @@ public class AddListener implements Listener {
 
                         DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderData(clickedBlock, event.getPlayer(), loot);
             
+                    } else {
+                        DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderData(clickedBlock, event.getPlayer(), null);
                     }
 
                     

@@ -23,25 +23,26 @@ public class DatabaseCoordinator {
     private final DatabaseManager databaseManager;
     private final GoblinsPlunder plugin;
 
+
     public DatabaseCoordinator(DatabaseManager databaseManager, GoblinsPlunder plugin) {
         this.databaseManager = databaseManager;
         this.plugin = plugin;
     }
 
     public void createPlunderData(Block block, Player player, LootTablesOverworld loot) {
-
-        
+        String loot_table_key = "";
         String blockId = UUID.randomUUID().toString();
         String location = "(X: " + block.getX() + ", Y: " + block.getY() + ", Z: " + block.getZ() + ")";
         String blockType = block.getBlockData().getMaterial().toString();
-        String loot_table_key = loot.getKey();
-        Blob contents = null;
-
+        
+        if (loot != null){
+            loot_table_key = loot.getKey();
+        }
         
         Container container = (Container) block.getState();
 
         String serializedContents = Serializer.serializeContainerContents(container.getInventory().getContents());
-        contents = new Blob(Serializer.toByteArray(serializedContents), null);
+        Blob contents = new Blob(Serializer.toByteArray(serializedContents), null);
         
         //Add our custom key to the block data
         NamespacedKey key = new NamespacedKey(plugin, "blockId");

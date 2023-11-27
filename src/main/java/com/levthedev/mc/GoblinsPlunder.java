@@ -7,6 +7,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.levthedev.mc.listeners.AddListener;
+import com.levthedev.mc.listeners.PlunderListener;
 import com.levthedev.mc.managers.CommandManager;
 import com.levthedev.mc.managers.DatabaseManager;
 import com.levthedev.mc.managers.TabCompleteManager;
@@ -29,6 +30,7 @@ public final class GoblinsPlunder extends JavaPlugin {
 
     public GoblinsPlunder() {
         listeners.put("add", new AddListener());
+        listeners.put("", new PlunderListener());
     }
 
 

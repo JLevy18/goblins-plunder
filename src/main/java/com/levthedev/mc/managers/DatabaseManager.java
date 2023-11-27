@@ -15,6 +15,8 @@ import org.bukkit.entity.Player;
 
 import com.levthedev.mc.GoblinsPlunder;
 import com.levthedev.mc.coordinators.DatabaseCoordinator;
+import com.levthedev.mc.dao.Plunder;
+import com.levthedev.mc.utility.PlunderCallback;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
@@ -174,11 +176,40 @@ public class DatabaseManager {
                 stmt.setBlob(5, contents);
                 stmt.executeUpdate();
 
-                player.sendMessage(ChatColor.BOLD + "" + ChatColor.DARK_GREEN + "Plunder successfully created: " + ChatColor.RESET + "" + ChatColor.GREEN + blockId);
+                player.sendMessage(ChatColor.BOLD + "" + ChatColor.DARK_GREEN + "Plunder successfully created:\n" + ChatColor.RESET + "" + ChatColor.GREEN + blockId);
             } catch (SQLException e) {
 
                 player.sendMessage(ChatColor.BOLD + "" + ChatColor.DARK_RED + "Database Error: " + ChatColor.RESET + "" + ChatColor.RED + e.getMessage());
             }
+        });
+
+    }
+
+    public void getPlunderDataByIdAsync(String blockId, PlunderCallback callback) {
+
+
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            Plunder plunder = null;
+            String sql = "SELECT * FROM plunder_blocks WHERE id = ?";
+
+            try (Connection conn = dataSource.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(sql)) {
+                
+                stmt.setString(1, blockId);
+                ResultSet rs = stmt.executeQuery();
+        
+                if (rs.next()) {
+                    plunder = new Plunder(rs.getString("id"), rs.getString("location"), rs.getString("block_type"), rs.getString("loot_table_key"), rs.getBlob("contents"), "");
+                }
+
+            } catch (SQLException e) {
+                String error = ChatColor.DARK_RED + "" + ChatColor.BOLD + "[Database Error]: " + e.getMessage();
+                plunder = new Plunder(null,null,null,null,null, error);
+            }
+
+            final Plunder response = plunder;
+            Bukkit.getScheduler().runTask(GoblinsPlunder.getInstance(), () -> callback.onQueryFinish(response));
+
         });
 
     }
