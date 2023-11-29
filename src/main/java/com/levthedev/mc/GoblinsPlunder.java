@@ -6,15 +6,17 @@ import java.util.Map;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.levthedev.mc.coordinators.DatabaseCoordinator;
 import com.levthedev.mc.listeners.AddListener;
-import com.levthedev.mc.listeners.PlunderListener;
+import com.levthedev.mc.listeners.ClosePlunderListener;
+import com.levthedev.mc.listeners.OpenPlunderListener;
+import com.levthedev.mc.managers.PlunderManager;
 import com.levthedev.mc.managers.CommandManager;
 import com.levthedev.mc.managers.DatabaseManager;
+import com.levthedev.mc.managers.ListenerManager;
 import com.levthedev.mc.managers.TabCompleteManager;
 
 public final class GoblinsPlunder extends JavaPlugin {
-
-
 
     private static GoblinsPlunder instance;
 
@@ -28,21 +30,31 @@ public final class GoblinsPlunder extends JavaPlugin {
         return instance;
     }
 
-    public GoblinsPlunder() {
-        listeners.put("add", new AddListener());
-        listeners.put("", new PlunderListener());
-    }
-
-
     @Override
     public void onEnable(){
 
+        // The order of these operations is very important in this function
+        // Some of the managers are singletons and need to be initialized first
+
+
+        // Setup Config
+        saveDefaultConfig();
+
         // Initialize all the things
         instance = this;
-        saveDefaultConfig();
+
         DatabaseManager.initialize();
-        registerCommands();
-        registerListeners();
+        DatabaseManager.getInstance().setDatabaseCoordinator(new DatabaseCoordinator());
+
+        PlunderManager.initialize();
+
+        populateListeners();
+        ListenerManager.initialize(listeners);
+
+        
+        this.getCommand("gp").setExecutor(new CommandManager());
+        this.getCommand("gp").setTabCompleter(new TabCompleteManager());
+
     }
 
     @Override
@@ -50,17 +62,10 @@ public final class GoblinsPlunder extends JavaPlugin {
         DatabaseManager.getInstance().closePool();
     }
 
-    // Register commands for plugin
-    private void registerCommands() {
-        this.getCommand("gp").setExecutor(new CommandManager(listeners));
-        this.getCommand("gp").setTabCompleter(new TabCompleteManager());
-    }
-
-    private void registerListeners() {
-        for (Map.Entry<String,Listener> entry : listeners.entrySet()) {
-            getServer().getPluginManager().registerEvents(entry.getValue(), instance);
-        }
-
+    private void populateListeners(){
+        listeners.put("add", new AddListener());
+        listeners.put("open", new OpenPlunderListener());
+        listeners.put("close", new ClosePlunderListener());
     }
     
 }

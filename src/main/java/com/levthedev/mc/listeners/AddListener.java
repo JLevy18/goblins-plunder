@@ -1,12 +1,17 @@
 package com.levthedev.mc.listeners;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
-import org.bukkit.World;
 import org.bukkit.block.Barrel;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Container;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
@@ -15,28 +20,37 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.loot.LootTable;
 
 import com.levthedev.mc.managers.DatabaseManager;
+import com.levthedev.mc.managers.ListenerManager;
 import com.levthedev.mc.utility.LootTablesOverworld;
 
 import net.md_5.bungee.api.ChatColor;
 
 public class AddListener implements Listener {
 
+    // This is a set of the players that are concurrently running the command
+    private Set<Player> activePlayers = new HashSet<>();
+    private Map<Player, LootTablesOverworld> activeLootTables = new HashMap<>();    
 
-    private boolean isActive = false;
-    private LootTablesOverworld loot;
 
-    public void setLoot(LootTablesOverworld loot) {
-        this.loot = loot;
+    public void setLoot(Player player, LootTablesOverworld loot) {
+        activeLootTables.put(player, loot);
     }
 
-    public void setActive(boolean active) {
-        this.isActive = active;
+    public void setActive(Player player, boolean active) {
+        if (active) {
+            activePlayers.add(player);
+        } else {
+            activePlayers.remove(player);
+            activeLootTables.remove(player);
+        }
     }
 
 
     @EventHandler
     public void onAddCommand(PlayerInteractEvent event) {
-        if (!isActive) return;
+        Player player = event.getPlayer();
+
+        if (!activePlayers.contains(player)) return;
 
         event.setCancelled(true);
 
@@ -50,13 +64,9 @@ public class AddListener implements Listener {
                     
                     Container container = (Container) clickedBlock.getState();
 
-                    if (loot != null){
+                    if (activeLootTables.get(player) != null){
 
-                        String[] keySplit = loot.getKey().split(":");
-
-                        NamespacedKey lootKey = new NamespacedKey(keySplit[0], keySplit[1]);
-                        LootTable lootTable = Bukkit.getLootTable(lootKey);
-                        System.out.println(lootTable);
+                        LootTable lootTable = Bukkit.getLootTable(NamespacedKey.minecraft(activeLootTables.get(player).getKey()));
 
                         if (container instanceof Chest){
                             Chest chest = (Chest) container;
@@ -72,12 +82,11 @@ public class AddListener implements Listener {
                             barrel.setLootTable(lootTable);
                             barrel.update();
                         }
-                        
 
-                        DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderData(clickedBlock, event.getPlayer(), loot);
+                        DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderData(clickedBlock, event.getPlayer(), activeLootTables.get(player));
             
                     } else {
-                        DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderData(clickedBlock, event.getPlayer(), null);
+                        DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderData(clickedBlock, event.getPlayer(), activeLootTables.get(player));
                     }
 
                     
@@ -88,9 +97,8 @@ public class AddListener implements Listener {
             }
 
         }
-
-
-        setActive(false);
+        
+        setActive(player, false);
     }
     
 }

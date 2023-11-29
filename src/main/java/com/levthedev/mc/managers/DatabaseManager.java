@@ -22,10 +22,10 @@ import com.zaxxer.hikari.HikariDataSource;
 
 public class DatabaseManager {
     
-    private static GoblinsPlunder plugin = GoblinsPlunder.getInstance();
+    private static final GoblinsPlunder plugin = GoblinsPlunder.getInstance();
     private static DatabaseManager instance;
     private HikariDataSource dataSource;
-    private final DatabaseCoordinator databaseCoordinator;
+    private DatabaseCoordinator databaseCoordinator;
 
 
     public static synchronized DatabaseManager getInstance() {
@@ -36,9 +36,7 @@ public class DatabaseManager {
         return instance;
     }
 
-    public DatabaseManager() {
-
-
+    private DatabaseManager() {
 
         // Setup datasource 
         try {
@@ -59,15 +57,11 @@ public class DatabaseManager {
                 throw new RuntimeException("Database connection failed", e);
             }
         }
-        
-
-        // Setup coordinator
-        this.databaseCoordinator = new DatabaseCoordinator(this, plugin);
 
     }
 
 
-    public static void initialize() {
+    public static synchronized void initialize() {
         instance = new DatabaseManager();
     }
 
@@ -101,6 +95,10 @@ public class DatabaseManager {
 
     public Connection getConnection() throws SQLException {
         return dataSource.getConnection();
+    }
+
+    public void setDatabaseCoordinator(DatabaseCoordinator coordinator){
+        this.databaseCoordinator = coordinator;
     }
 
 
@@ -150,6 +148,7 @@ public class DatabaseManager {
             String query = "CREATE TABLE plunder_state (" +
                            "player_uuid VARCHAR(36) NOT NULL," +
                            "pb_id VARCHAR(36) NOT NULL," +
+                           "state BLOB NOT NULL," +
                            "PRIMARY KEY (player_uuid, pb_id)," +
                            "FOREIGN KEY (pb_id) REFERENCES plunder_blocks(id));";
             stmt.executeUpdate(query);
@@ -162,7 +161,7 @@ public class DatabaseManager {
     // ##########################
 
 
-    public void createPlunderData(String blockId, String location, String blockType, String loot_table_key, Blob contents, Player player) {
+    public void createPlunderDataAsync(String blockId, String location, String blockType, String loot_table_key, byte[] contents, Player player) {
 
 
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
@@ -173,7 +172,7 @@ public class DatabaseManager {
                 stmt.setString(2, location);
                 stmt.setString(3, blockType);
                 stmt.setString(4, loot_table_key);
-                stmt.setBlob(5, contents);
+                stmt.setBytes(5, contents);
                 stmt.executeUpdate();
 
                 player.sendMessage(ChatColor.BOLD + "" + ChatColor.DARK_GREEN + "Plunder successfully created:\n" + ChatColor.RESET + "" + ChatColor.GREEN + blockId);
@@ -183,6 +182,25 @@ public class DatabaseManager {
             }
         });
 
+    }
+
+    public void createPlunderInteractionAsync(String playerUuid, String pbId, byte[] state){
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            // Database operation
+            String sql = "INSERT INTO plunder_state (player_uuid, pb_id, state) VALUES (?, ?, ?) " +
+                         "ON DUPLICATE KEY UPDATE state = ?;"; // Adjust SQL as needed
+    
+            try (Connection conn = dataSource.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, playerUuid);
+                stmt.setString(2, pbId);
+                stmt.setBytes(3, state);
+                stmt.setBytes(4, state); // For the ON DUPLICATE KEY clause
+                stmt.executeUpdate();
+            } catch (SQLException e) {
+                // Handle exceptions, possibly logging them
+            }
+        });
     }
 
     public void getPlunderDataByIdAsync(String blockId, PlunderCallback callback) {
@@ -206,6 +224,10 @@ public class DatabaseManager {
                 String error = ChatColor.DARK_RED + "" + ChatColor.BOLD + "[Database Error]: " + e.getMessage();
                 plunder = new Plunder(null,null,null,null,null, error);
             }
+
+
+
+            // Callback to the main thread
 
             final Plunder response = plunder;
             Bukkit.getScheduler().runTask(GoblinsPlunder.getInstance(), () -> callback.onQueryFinish(response));

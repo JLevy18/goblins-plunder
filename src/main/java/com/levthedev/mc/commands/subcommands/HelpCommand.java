@@ -25,7 +25,7 @@ public class HelpCommand extends SubCommand {
     }
 
     @Override
-    public void execute(Player player, String[] args, Map<String,Listener> listeners) {
+    public void execute(Player player, String[] args) {
         player.sendMessage(
             
         "==========[Goblins Plunder Help]===========\n" +

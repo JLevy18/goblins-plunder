@@ -7,13 +7,13 @@ import org.bukkit.event.Listener;
 
 import com.levthedev.mc.commands.SubCommand;
 import com.levthedev.mc.listeners.AddListener;
+import com.levthedev.mc.listeners.OpenPlunderListener;
+import com.levthedev.mc.managers.ListenerManager;
 import com.levthedev.mc.utility.LootTablesOverworld;
 
 import net.md_5.bungee.api.ChatColor;
 
 public class AddCommand extends SubCommand{
-
-    private AddListener addListener;
 
     @Override
     public String getName() {
@@ -21,7 +21,7 @@ public class AddCommand extends SubCommand{
     }
 
     @Override
-    public String getDescription() {
+    public String getDescription() { 
         return "Manually adds a plunder";
     }
 
@@ -31,18 +31,21 @@ public class AddCommand extends SubCommand{
     }
 
     @Override
-    public void execute(Player player, String[] args, Map<String,Listener> listeners) {
+    public void execute(Player player, String[] args) {
 
-        addListener = (AddListener) listeners.get(this.getName());
+        AddListener addListener = (AddListener) ListenerManager.getInstance().getListeners().get("add");
+        OpenPlunderListener openPlunderListener = (OpenPlunderListener) ListenerManager.getInstance().getListeners().get("open");
 
         if (args.length == 1) {
-            addListener.setActive(true);
+            addListener.setActive(player, true);
             player.sendMessage(ChatColor.GREEN + "Click a container to convert to plunder");
         } else if (args.length == 2) {
 
             try { 
-                addListener.setLoot(LootTablesOverworld.valueOf(args[1]));
-                addListener.setActive(true);
+                
+
+                addListener.setLoot(player, LootTablesOverworld.valueOf(args[1]));
+                addListener.setActive(player, true);
                 player.sendMessage(ChatColor.GREEN + "Click a container to convert to plunder");
             } catch (IllegalArgumentException e) {
                 player.sendMessage(ChatColor.DARK_RED + "" +  ChatColor.BOLD + "[GP Error] " + ChatColor.RED + "Invalid LootTable");

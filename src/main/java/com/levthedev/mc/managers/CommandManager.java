@@ -16,10 +16,8 @@ import com.levthedev.mc.commands.subcommands.HelpCommand;
 public class CommandManager implements CommandExecutor {
 
     private final ArrayList<SubCommand> commands = new ArrayList<>();
-    private Map<String,Listener> listeners;
 
-    public CommandManager(Map<String,Listener> listeners){
-        this.listeners = listeners;
+    public CommandManager(){
         commands.add(new HelpCommand());
         commands.add(new AddCommand());
     }
@@ -34,7 +32,7 @@ public class CommandManager implements CommandExecutor {
             // Base command passed
             if (args.length == 0) {
                 HelpCommand help = new HelpCommand();
-                help.execute(player, args, listeners);
+                help.execute(player, args);
                 return true;
             }
             
@@ -44,7 +42,7 @@ public class CommandManager implements CommandExecutor {
 
                 for (SubCommand subcommand : commands){
                     if (args[0].equalsIgnoreCase(subcommand.getName())){
-                        subcommand.execute(player, args, listeners);
+                        subcommand.execute(player, args);
                         return true;
                     }
                 }

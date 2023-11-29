@@ -4,12 +4,15 @@ com\levthedev\mc\listeners\AddListener.class
 com\levthedev\mc\utility\Serializer.class
 com\levthedev\mc\dao\Plunder.class
 com\levthedev\mc\commands\subcommands\HelpCommand.class
-com\levthedev\mc\listeners\PlunderListener.class
 com\levthedev\mc\managers\DatabaseManager.class
+com\levthedev\mc\listeners\ClosePlunderListener.class
+com\levthedev\mc\managers\ListenerManager.class
 com\levthedev\mc\commands\SubCommand.class
+com\levthedev\mc\listeners\OpenPlunderListener.class
 com\levthedev\mc\utility\LootTablesOverworld.class
 com\levthedev\mc\coordinators\DatabaseCoordinator.class
 com\levthedev\mc\managers\TabCompleteManager.class
 com\levthedev\mc\managers\CommandManager.class
 com\levthedev\mc\commands\subcommands\AddCommand.class
 com\levthedev\mc\GoblinsPlunder.class
+com\levthedev\mc\managers\PlunderManager.class

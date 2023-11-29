@@ -25,7 +25,7 @@ public class RestockCommand extends SubCommand{
     }
 
     @Override
-    public void execute(Player player, String[] args, Map<String, Listener> listeners) {
+    public void execute(Player player, String[] args) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'execute'");
     }
