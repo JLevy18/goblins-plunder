@@ -17,10 +17,12 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.loot.LootTable;
 
+import com.levthedev.mc.managers.ConfigManager;
 import com.levthedev.mc.managers.DatabaseManager;
-import com.levthedev.mc.managers.ListenerManager;
+import com.levthedev.mc.managers.PlunderManager;
 import com.levthedev.mc.utility.LootTablesOverworld;
 
 import net.md_5.bungee.api.ChatColor;
@@ -86,18 +88,24 @@ public class AddListener implements Listener {
                         DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderData(clickedBlock, event.getPlayer(), activeLootTables.get(player));
             
                     } else {
+
+                        if (PlunderManager.getInstance().isChestEmpty(container)){
+                            player.sendMessage(ConfigManager.getInstance().getPrefix() + ChatColor.RED + "The container can't be empty");
+                            return;
+                        }
+
                         DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderData(clickedBlock, event.getPlayer(), activeLootTables.get(player));
                     }
 
                     
                 } else {
-                    event.getPlayer().sendMessage(ChatColor.DARK_RED + "" + ChatColor.BOLD + "Invalid block type: " + ChatColor.RESET + "" + ChatColor.RED + "block must be a container.");
+                    event.getPlayer().sendMessage(ConfigManager.getInstance().getPrefix() + ChatColor.DARK_RED + "Invalid block type: " + ChatColor.RESET + "" + ChatColor.RED + "block must be a container.");
                 }
 
             }
 
         }
-        
+
         setActive(player, false);
     }
     

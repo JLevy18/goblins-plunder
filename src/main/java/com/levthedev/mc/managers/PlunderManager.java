@@ -4,6 +4,9 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.bukkit.block.Container;
+import org.bukkit.inventory.ItemStack;
+
 public class PlunderManager {
     private static PlunderManager instance = null;
     private final Map<UUID, String> openPlunderMap = new ConcurrentHashMap<>();
@@ -35,6 +38,15 @@ public class PlunderManager {
 
     public Map<UUID,String> getOpenPlunderMap(){
         return openPlunderMap;
+    }
+
+    public boolean isChestEmpty(Container container) {
+        for (ItemStack item : container.getInventory().getContents()) {
+            if (item != null && item.getAmount() > 0) {
+                return false; // Found an item, chest is not empty
+            }
+        }
+        return true; // No items found, chest is empty
     }
 
 }

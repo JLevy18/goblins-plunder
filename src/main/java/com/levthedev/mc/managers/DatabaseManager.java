@@ -1,21 +1,23 @@
 package com.levthedev.mc.managers;
 
-import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.util.Consumer;
 
 import com.levthedev.mc.GoblinsPlunder;
 import com.levthedev.mc.coordinators.DatabaseCoordinator;
 import com.levthedev.mc.dao.Plunder;
+import com.levthedev.mc.dao.PlunderState;
 import com.levthedev.mc.utility.PlunderCallback;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -126,8 +128,8 @@ public class DatabaseManager {
             if (!tableExists(conn, "plunder_state")) {
                 createPlunderStateTable(conn);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to create database tables", e);
         }
     }
 
@@ -175,10 +177,10 @@ public class DatabaseManager {
                 stmt.setBytes(5, contents);
                 stmt.executeUpdate();
 
-                player.sendMessage(ChatColor.BOLD + "" + ChatColor.DARK_GREEN + "Plunder successfully created:\n" + ChatColor.RESET + "" + ChatColor.GREEN + blockId);
+                player.sendMessage(ConfigManager.getInstance().getPrefix() + ChatColor.DARK_GREEN + "Plunder successfully created:\n" + ChatColor.RESET + "" + ChatColor.GREEN + blockId);
             } catch (SQLException e) {
 
-                player.sendMessage(ChatColor.BOLD + "" + ChatColor.DARK_RED + "Database Error: " + ChatColor.RESET + "" + ChatColor.RED + e.getMessage());
+                player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.DARK_RED + "Database Error: " + ChatColor.RESET + "" + ChatColor.RED + e.getMessage());
             }
         });
 
@@ -198,7 +200,7 @@ public class DatabaseManager {
                 stmt.setBytes(4, state); // For the ON DUPLICATE KEY clause
                 stmt.executeUpdate();
             } catch (SQLException e) {
-                // Handle exceptions, possibly logging them
+                System.err.println("Failed to save interaction to the database");
             }
         });
     }
@@ -236,7 +238,33 @@ public class DatabaseManager {
 
     }
     
-
+    public void getPlunderStateByIdAsync(UUID playerUuid, String blockId, Consumer<PlunderState> callback) {
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            PlunderState plunderState = null;
+            String sql = "SELECT * FROM plunder_state WHERE player_uuid = ? AND pb_id = ?";
+    
+            try (Connection conn = dataSource.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(sql)) {
+                
+                stmt.setString(1, playerUuid.toString());
+                stmt.setString(2, blockId);
+                ResultSet rs = stmt.executeQuery();
+    
+                if (rs.next()) {
+                    byte[] stateData = rs.getBytes("state");
+                    // Assuming PlunderState is a class you've created to hold this data
+                    plunderState = new PlunderState(playerUuid, blockId, stateData);
+                }
+    
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+    
+            // Callback to the main thread
+            final PlunderState response = plunderState;
+            Bukkit.getScheduler().runTask(plugin, () -> callback.accept(response));
+        });
+    }
     // ############################
     // ##    HELPER FUNCTIONS    ##
     // ############################

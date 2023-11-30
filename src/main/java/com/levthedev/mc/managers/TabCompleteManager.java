@@ -20,8 +20,10 @@ public class TabCompleteManager implements TabCompleter {
 
 
     public TabCompleteManager() {
-        commands.add("add");
+        
+        commands.add("reload");
         commands.add("help");
+        commands.add("add");
         commands.add("restock");
 
         for (LootTablesOverworld lootTable : LootTablesOverworld.values()) {

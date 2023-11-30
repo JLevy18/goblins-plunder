@@ -12,6 +12,7 @@ import com.levthedev.mc.listeners.ClosePlunderListener;
 import com.levthedev.mc.listeners.OpenPlunderListener;
 import com.levthedev.mc.managers.PlunderManager;
 import com.levthedev.mc.managers.CommandManager;
+import com.levthedev.mc.managers.ConfigManager;
 import com.levthedev.mc.managers.DatabaseManager;
 import com.levthedev.mc.managers.ListenerManager;
 import com.levthedev.mc.managers.TabCompleteManager;
@@ -43,6 +44,8 @@ public final class GoblinsPlunder extends JavaPlugin {
         // Initialize all the things
         instance = this;
 
+        ConfigManager.initialize();
+
         DatabaseManager.initialize();
         DatabaseManager.getInstance().setDatabaseCoordinator(new DatabaseCoordinator());
 
@@ -62,6 +65,7 @@ public final class GoblinsPlunder extends JavaPlugin {
         DatabaseManager.getInstance().closePool();
     }
 
+    // The order these are registered in is important because Bukkit API calls duplicate events synchronously in the order that they were registered
     private void populateListeners(){
         listeners.put("add", new AddListener());
         listeners.put("open", new OpenPlunderListener());

@@ -8,6 +8,7 @@ import org.bukkit.event.Listener;
 import com.levthedev.mc.commands.SubCommand;
 import com.levthedev.mc.listeners.AddListener;
 import com.levthedev.mc.listeners.OpenPlunderListener;
+import com.levthedev.mc.managers.ConfigManager;
 import com.levthedev.mc.managers.ListenerManager;
 import com.levthedev.mc.utility.LootTablesOverworld;
 
@@ -34,7 +35,6 @@ public class AddCommand extends SubCommand{
     public void execute(Player player, String[] args) {
 
         AddListener addListener = (AddListener) ListenerManager.getInstance().getListeners().get("add");
-        OpenPlunderListener openPlunderListener = (OpenPlunderListener) ListenerManager.getInstance().getListeners().get("open");
 
         if (args.length == 1) {
             addListener.setActive(player, true);
@@ -42,13 +42,11 @@ public class AddCommand extends SubCommand{
         } else if (args.length == 2) {
 
             try { 
-                
-
                 addListener.setLoot(player, LootTablesOverworld.valueOf(args[1]));
                 addListener.setActive(player, true);
-                player.sendMessage(ChatColor.GREEN + "Click a container to convert to plunder");
+                player.sendMessage(ConfigManager.getInstance().getPrefix() + ChatColor.GREEN + "Click a container to convert to plunder");
             } catch (IllegalArgumentException e) {
-                player.sendMessage(ChatColor.DARK_RED + "" +  ChatColor.BOLD + "[GP Error] " + ChatColor.RED + "Invalid LootTable");
+                player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.RED + "Invalid LootTable");
             }
             
         }

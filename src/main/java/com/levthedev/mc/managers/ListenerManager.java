@@ -1,10 +1,6 @@
 package com.levthedev.mc.managers;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.Bukkit;
@@ -18,7 +14,6 @@ public class ListenerManager {
 
 
     private final Map<String, Listener> listeners;
-    private final Set<UUID> openPlunderBlacklist = Collections.synchronizedSet(new HashSet<>());
 
 
     private ListenerManager(Map<String, Listener> listeners){
@@ -27,7 +22,7 @@ public class ListenerManager {
 
     public static synchronized ListenerManager getInstance() {
         if (instance == null) {
-            throw new IllegalStateException("DatabaseManager not initialized");
+            throw new IllegalStateException("ListenerManager not initialized");
         }
 
         return instance;
@@ -49,17 +44,6 @@ public class ListenerManager {
         return this.listeners;
     }
 
-    public void addOpenPlunderBlacklist(UUID playerUuid){
-        openPlunderBlacklist.add(playerUuid);
-    }
-
-    public void removeOpenPlunderBlacklist(UUID playerUuid){
-        openPlunderBlacklist.remove(playerUuid);
-    }
-
-    public Set<UUID> getOpenPlunderBlacklist() {
-        return openPlunderBlacklist;
-    }
 
 
 
