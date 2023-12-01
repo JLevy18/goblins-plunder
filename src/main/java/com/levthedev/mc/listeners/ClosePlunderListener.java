@@ -40,7 +40,7 @@ public class ClosePlunderListener implements Listener {
             }
 
             // Save the interaction asynchronously to the database
-            DatabaseManager.getInstance().createPlunderInteractionAsync(playerUuid, pbId, state);
+            DatabaseManager.getInstance().createPlunderStateAsync(playerUuid, pbId, state);
             plunderManager.removeOpenPlunder(player.getUniqueId());
         }
     }

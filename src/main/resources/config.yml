@@ -10,5 +10,5 @@ debug: enabled
 
 messages:
   plunder:
-    title: "&2Plunder"
+    title: "&5Plunder"
   

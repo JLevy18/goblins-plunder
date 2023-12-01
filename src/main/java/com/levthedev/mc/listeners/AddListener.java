@@ -90,7 +90,8 @@ public class AddListener implements Listener {
                     } else {
 
                         if (PlunderManager.getInstance().isChestEmpty(container)){
-                            player.sendMessage(ConfigManager.getInstance().getPrefix() + ChatColor.RED + "The container can't be empty");
+                            player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.RED + "The container can't be empty");
+                            setActive(player, false);
                             return;
                         }
 
@@ -99,7 +100,7 @@ public class AddListener implements Listener {
 
                     
                 } else {
-                    event.getPlayer().sendMessage(ConfigManager.getInstance().getPrefix() + ChatColor.DARK_RED + "Invalid block type: " + ChatColor.RESET + "" + ChatColor.RED + "block must be a container.");
+                    event.getPlayer().sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.DARK_RED + "Invalid block type: " + ChatColor.RESET + "" + ChatColor.RED + "block must be a container.");
                 }
 
             }

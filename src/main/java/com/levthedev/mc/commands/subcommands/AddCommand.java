@@ -38,7 +38,7 @@ public class AddCommand extends SubCommand{
 
         if (args.length == 1) {
             addListener.setActive(player, true);
-            player.sendMessage(ChatColor.GREEN + "Click a container to convert to plunder");
+            player.sendMessage(ConfigManager.getInstance().getPrefix() + ChatColor.GREEN + "Click a container to convert to plunder");
         } else if (args.length == 2) {
 
             try { 

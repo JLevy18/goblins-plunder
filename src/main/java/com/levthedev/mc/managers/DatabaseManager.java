@@ -157,9 +157,26 @@ public class DatabaseManager {
         }
     }
 
+    public void resetPlunderStateTableAsync() {
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            String sql = "TRUNCATE TABLE plunder_state";
+    
+            try (Connection conn = dataSource.getConnection();
+                 Statement stmt = conn.createStatement()) {
+                
+                stmt.executeUpdate(sql);
+                System.out.println("plunder_state table has been reset.");
+    
+            } catch (SQLException e) {
+                e.printStackTrace();
+                System.err.println("Error resetting plunder_state table: " + e.getMessage());
+            }
+        });
+    }
+
 
     // ##########################
-    // ##   CRUD OPERATIONS    ##
+    // ##    DB CREATE/GET     ##
     // ##########################
 
 
@@ -186,7 +203,7 @@ public class DatabaseManager {
 
     }
 
-    public void createPlunderInteractionAsync(String playerUuid, String pbId, byte[] state){
+    public void createPlunderStateAsync(String playerUuid, String pbId, byte[] state){
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             // Database operation
             String sql = "INSERT INTO plunder_state (player_uuid, pb_id, state) VALUES (?, ?, ?) " +
@@ -265,6 +282,8 @@ public class DatabaseManager {
             Bukkit.getScheduler().runTask(plugin, () -> callback.accept(response));
         });
     }
+
+
     // ############################
     // ##    HELPER FUNCTIONS    ##
     // ############################

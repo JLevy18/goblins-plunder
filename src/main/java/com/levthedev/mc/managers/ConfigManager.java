@@ -35,16 +35,16 @@ public class ConfigManager {
 
     public String getPlunderTitle(){
 
-        return ChatColor.translateAlternateColorCodes('&', config.getString("messages.plunder.title", "&2Plunder"));
+        return ChatColor.translateAlternateColorCodes('&', config.getString("messages.plunder.title", "&5Plunder"));
 
     }
 
     public String getPrefix(){
-        return ChatColor.BOLD + "" + ChatColor.DARK_GREEN + "[GP] " + ChatColor.RESET + "";
+        return ChatColor.DARK_GREEN + "" + ChatColor.BOLD + "[GP] " + ChatColor.RESET + "";
     }
 
     public String getErrorPrefix(){
-        return ChatColor.BOLD + "" + ChatColor.DARK_RED + "[GP Error] " + ChatColor.RESET + "";
+        return ChatColor.DARK_RED + "" + ChatColor.BOLD + "[GP Error] " + ChatColor.RESET + "";
     }
 
 

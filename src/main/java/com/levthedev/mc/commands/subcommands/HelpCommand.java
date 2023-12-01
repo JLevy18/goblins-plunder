@@ -7,6 +7,8 @@ import org.bukkit.event.Listener;
 
 import com.levthedev.mc.commands.SubCommand;
 
+import net.md_5.bungee.api.ChatColor;
+
 public class HelpCommand extends SubCommand {
 
     @Override
@@ -28,13 +30,16 @@ public class HelpCommand extends SubCommand {
     public void execute(Player player, String[] args) {
         player.sendMessage(
             
-        "==========[Goblins Plunder Help]===========\n" +
-        "/gp help : Display a list of all commands.\n" +
-        "/gp add : Add a plunder block to the database.\n" +
+       ChatColor.GOLD + "" + ChatColor.BOLD + "===========[" + ChatColor.DARK_GREEN + " Goblins Plunder" + ChatColor.YELLOW + "" + ChatColor.BOLD + " Help" + ChatColor.GOLD + "" + ChatColor.BOLD + "]============\n" + ChatColor.RESET + "" +
+       ChatColor.DARK_GREEN + "/gp help " + ChatColor.GREEN + ": Display a list of all commands.\n" +
+       ChatColor.DARK_GREEN +"/gp reload " + ChatColor.GREEN + ": Reload the config file.\n" +
+       ChatColor.DARK_GREEN +"/gp add <LootTable> " + ChatColor.GREEN + ": Add a plunder block to the database.\n" +
+       ChatColor.DARK_GREEN +"/gp restock <World> " + ChatColor.GREEN + ": Restock the plunders in a world.\n" +
         
-        "=========================================\n"
+       ChatColor.GOLD + "" + ChatColor.BOLD + "=========================================\n"
         
         );
+
     }
     
 }
