@@ -31,24 +31,24 @@ public class RemovePlunderListener implements Listener {
 
         if (ConfigManager.getInstance().isPlunderInvincible()) {
 
-            if (brokenBlock.getState() instanceof Chest) {
+            if (brokenBlock.getState() instanceof Container) {
 
-                Chest chest = (Chest) brokenBlock.getState();
+                Container container = (Container) brokenBlock.getState();
 
-                if(chest.getPersistentDataContainer().getKeys().toString().contains("goblinsplunder")){
+                if(container.getPersistentDataContainer().getKeys().toString().contains("goblinsplunder")){
 
                     event.setCancelled(true);
                 }
             }
         } else {
             
-            if (brokenBlock.getState() instanceof Chest) {
+            if (brokenBlock.getState() instanceof Container) {
 
-                Chest chest = (Chest) brokenBlock.getState();
+                Container container = (Container) brokenBlock.getState();
 
-                if(chest.getPersistentDataContainer().getKeys().toString().contains("goblinsplunder")){
-                    chest.getInventory().clear();
-                    DatabaseManager.getInstance().deletePlunderBlocksByIdsAsync(Arrays.asList(chest.getPersistentDataContainer().get(new NamespacedKey(GoblinsPlunder.getInstance(), "blockid"), PersistentDataType.STRING)));
+                if(container.getPersistentDataContainer().getKeys().toString().contains("goblinsplunder")){
+                    container.getInventory().clear();
+                    DatabaseManager.getInstance().deletePlunderBlocksByIdsAsync(Arrays.asList(container.getPersistentDataContainer().get(new NamespacedKey(GoblinsPlunder.getInstance(), "blockid"), PersistentDataType.STRING)));
                 }
             }
         }
@@ -62,12 +62,12 @@ public class RemovePlunderListener implements Listener {
             List<Block> blocksToProtect = new ArrayList<>();
 
             for (Block block : event.blockList()){
-                if (block.getState() instanceof Chest) {
+                if (block.getState() instanceof Container) {
 
-                    Chest chest = (Chest) block.getState();
+                    Container container = (Container) block.getState();
         
-                    if(chest.getPersistentDataContainer().getKeys().toString().contains("goblinsplunder")){
-                        chest.getInventory().clear();
+                    if(container.getPersistentDataContainer().getKeys().toString().contains("goblinsplunder")){
+                        container.getInventory().clear();
                         blocksToProtect.add(block);
                     }
                 }
@@ -79,12 +79,12 @@ public class RemovePlunderListener implements Listener {
             List<String> blocksToRemove = new ArrayList<>();
 
             for (Block block : event.blockList()){
-                if (block.getState() instanceof Chest) {
+                if (block.getState() instanceof Container) {
 
-                    Chest chest = (Chest) block.getState();
-                    if(chest.getPersistentDataContainer().getKeys().toString().contains("goblinsplunder")){
-                        chest.getInventory().clear();
-                        blocksToRemove.add(chest.getPersistentDataContainer().get(new NamespacedKey(GoblinsPlunder.getInstance(), "blockid"), PersistentDataType.STRING));
+                    Container container = (Container) block.getState();
+                    if(container.getPersistentDataContainer().getKeys().toString().contains("goblinsplunder")){
+                        container.getInventory().clear();
+                        blocksToRemove.add(container.getPersistentDataContainer().get(new NamespacedKey(GoblinsPlunder.getInstance(), "blockid"), PersistentDataType.STRING));
                     }
                 }
             }

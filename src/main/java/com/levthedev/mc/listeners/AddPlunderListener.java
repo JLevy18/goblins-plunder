@@ -14,10 +14,13 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Container;
 import org.bukkit.block.TileState;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.minecart.StorageMinecart;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -52,7 +55,7 @@ public class AddPlunderListener implements Listener {
 
 
 
-    // Add Plunder using command
+    // Add Plunder using command (Barrels and Chests)
 
     @EventHandler
     public void onAddPlunder(PlayerInteractEvent event) {
@@ -65,6 +68,7 @@ public class AddPlunderListener implements Listener {
         if ((event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.LEFT_CLICK_BLOCK ) && event.getHand() == EquipmentSlot.HAND) {
 
             Block clickedBlock = event.getClickedBlock();
+
             if (clickedBlock != null) {
                 
                 // Block must be a container
@@ -81,7 +85,12 @@ public class AddPlunderListener implements Listener {
             
                             chest.setLootTable(lootTable);
                             chest.update();
-                        }
+                        } else if (container instanceof Barrel){
+                            Barrel barrel = (Barrel) container;
+            
+                            barrel.setLootTable(lootTable);
+                            barrel.update();
+                        } 
 
                         DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderData(clickedBlock, event.getPlayer(), activeLootTables.get(player));
             
@@ -108,6 +117,31 @@ public class AddPlunderListener implements Listener {
         setActive(player, false);
     }
     
+    // Add Plunder using command (Minecarts)
+
+    // @EventHandler
+    // public void onAddPlunder(PlayerInteractEntityEvent event) {
+
+    //     Player player = event.getPlayer();
+    //     if (!activePlayers.contains(player)) return;
+
+    //     if (activeLootTables.get(player) != null){
+
+    //         Entity entity = event.getRightClicked();
+    //         LootTable lootTable = Bukkit.getLootTable(NamespacedKey.minecraft(activeLootTables.get(player).getKey()));
+
+
+    //         if (entity instanceof StorageMinecart) {
+    //             StorageMinecart minecartChest = (StorageMinecart) entity;
+
+    //             minecartChest.setLootTable(lootTable);
+
+    //         } 
+    //     }
+
+    // }
+
+
     // Generated Structures Listener
 
     @EventHandler

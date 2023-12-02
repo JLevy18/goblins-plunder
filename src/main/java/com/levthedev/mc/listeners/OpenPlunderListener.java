@@ -1,12 +1,13 @@
 package com.levthedev.mc.listeners;
 
-import java.io.IOException;
 import java.util.Random;
 
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
+import org.bukkit.block.Barrel;
 import org.bukkit.block.Chest;
+import org.bukkit.block.Container;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -39,10 +40,10 @@ public class OpenPlunderListener implements Listener {
 
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getHand() == EquipmentSlot.HAND) {
 
-            if (event.getClickedBlock().getState() instanceof Chest){
-                Chest chest = (Chest) event.getClickedBlock().getState();
+            if (event.getClickedBlock().getState() instanceof Container){
+                Container container = (Container) event.getClickedBlock().getState();
 
-                PersistentDataContainer con = chest.getPersistentDataContainer();
+                PersistentDataContainer con = container.getPersistentDataContainer();
 
                 if (con.getKeys().toString().contains("goblinsplunder")) {
                     
@@ -51,7 +52,7 @@ public class OpenPlunderListener implements Listener {
                     String blockId = con.get(new NamespacedKey(GoblinsPlunder.getInstance(), "blockid"), PersistentDataType.STRING);
 
                     
-                    Plunder plunder = new Plunder(blockId, null, null, null, chest.getWorld().getName(), null);
+                    Plunder plunder = new Plunder(blockId, null, null, null, container.getWorld().getName(), null);
 
 
                     PlunderManager.getInstance().addOpenPlunder(player.getUniqueId(), plunder);
@@ -59,10 +60,10 @@ public class OpenPlunderListener implements Listener {
                     DatabaseManager.getInstance().getPlunderStateByIdAsync(player.getUniqueId(), blockId, stateResponse -> {
                         if (stateResponse == null || stateResponse.getPlayerUuid() == null) {
                             // No existing interaction, fill with loot table items
-                            fillChestWithLoot(chest, blockId, player);
+                            fillChestWithLoot(container, blockId, player);
                         } else {
                             // Existing interaction found, fill with saved state
-                            fillChestWithSavedState(chest, stateResponse.getStateData(), player);
+                            fillChestWithSavedState(container, stateResponse.getStateData(), player);
                         }
                     });           
                 }
@@ -73,13 +74,19 @@ public class OpenPlunderListener implements Listener {
 
 
     // NEED TO REVIST THIS FOR EDGE CASES
-    private void fillChestWithLoot(Chest chest, String blockId, Player player){
+    private void fillChestWithLoot(Container container, String blockId, Player player){
         DatabaseManager.getInstance().getPlunderDataByIdAsync(blockId, response -> {
 
             Bukkit.getScheduler().runTask(GoblinsPlunder.getInstance(), () -> {
                 if (response.getLootTableKey() != null && !response.getLootTableKey().equalsIgnoreCase("")) {
                     //Play sound
-                    chest.getLocation().getWorld().playSound(chest.getLocation(), Sound.BLOCK_CHEST_OPEN, 1.0f, 1.0f);
+                    if (container instanceof Chest){
+                        container.getLocation().getWorld().playSound(container.getLocation(), Sound.BLOCK_CHEST_OPEN, 1.0f, 1.0f);
+                    } else if (container instanceof Barrel){
+                        container.getLocation().getWorld().playSound(container.getLocation(), Sound.BLOCK_BARREL_OPEN, 1.0f, 1.0f);
+                    }
+
+                    
 
                     //Open fake chest
                     Inventory playerChest = Bukkit.createInventory(player, InventoryType.CHEST, ConfigManager.getInstance().getPlunderTitle());
@@ -93,7 +100,11 @@ public class OpenPlunderListener implements Listener {
                 } else if (response.getContents() != null){ // Manually filled and added chests
 
                     //Play sound
-                    chest.getLocation().getWorld().playSound(chest.getLocation(), Sound.BLOCK_CHEST_OPEN, 1.0f, 1.0f);
+                    if (container instanceof Chest){
+                        container.getLocation().getWorld().playSound(container.getLocation(), Sound.BLOCK_CHEST_OPEN, 1.0f, 1.0f);
+                    } else if (container instanceof Barrel){
+                        container.getLocation().getWorld().playSound(container.getLocation(), Sound.BLOCK_BARREL_OPEN, 1.0f, 1.0f);
+                    }
 
                     //Open fake chest
                     Inventory playerChest = Bukkit.createInventory(player, InventoryType.CHEST, ConfigManager.getInstance().getPlunderTitle());
@@ -119,11 +130,16 @@ public class OpenPlunderListener implements Listener {
         });
     }
 
-    private void fillChestWithSavedState(Chest chest, byte[] data, Player player){
+    private void fillChestWithSavedState(Container container, byte[] data, Player player){
 
         Bukkit.getScheduler().runTask(GoblinsPlunder.getInstance(), () -> {
 
-            chest.getLocation().getWorld().playSound(chest.getLocation(), Sound.BLOCK_CHEST_OPEN, 1.0f, 1.0f);
+            //Play sound
+            if (container instanceof Chest){
+                container.getLocation().getWorld().playSound(container.getLocation(), Sound.BLOCK_CHEST_OPEN, 1.0f, 1.0f);
+            } else if (container instanceof Barrel){
+                container.getLocation().getWorld().playSound(container.getLocation(), Sound.BLOCK_BARREL_OPEN, 1.0f, 1.0f);
+            }
 
             ItemStack[] contents = null;
             Inventory playerChest = Bukkit.createInventory(player, InventoryType.CHEST,  ConfigManager.getInstance().getPlunderTitle());
