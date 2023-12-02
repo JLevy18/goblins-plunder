@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="maven-antrun-" default="main">
   <target name="main">
-    <copy file="F:\Documents\VSCode Workspace\goblins-plunder\target/GoblinsPlunder-0.2.0.jar" tofile="F:/Documents/Spigot/Server/plugins/GoblinsPlunder-0.2.0.jar" />
-    <copy file="F:\Documents\VSCode Workspace\goblins-plunder\target/GoblinsPlunder-0.2.0.jar" tofile="F:/Documents/VSCode Workspace/goblins-plunder/GoblinsPlunder-0.2.0.jar" />
+    <copy file="F:\Documents\VSCode Workspace\goblins-plunder\target/GoblinsPlunder-0.5.0.jar" tofile="F:/Documents/Spigot/Server/plugins/GoblinsPlunder-0.5.0.jar" />
+    <copy file="F:\Documents\VSCode Workspace\goblins-plunder\target/GoblinsPlunder-0.5.0.jar" tofile="release/GoblinsPlunder-0.5.0.jar" />
   </target>
 </project>

@@ -5,7 +5,7 @@
 
     <groupId>com.levthedev.mc</groupId>
     <artifactId>GoblinsPlunder</artifactId>
-    <version>0.2.0</version>
+    <version>0.5.0</version>
     <packaging>jar</packaging>
 
     <name>Goblins Plunder</name>
@@ -68,7 +68,7 @@
                                 <copy file="${project.build.directory}/${project.artifactId}-${project.version}.jar"
                                     tofile="F:/Documents/Spigot/Server/plugins/${project.artifactId}-${project.version}.jar" />
                                 <copy file="${project.build.directory}/${project.artifactId}-${project.version}.jar"
-                                    tofile="F:/Documents/VSCode Workspace/goblins-plunder/${project.artifactId}-${project.version}.jar" />
+                                    tofile="release/${project.artifactId}-${project.version}.jar" />
                             </target>
                         </configuration>
                         <goals>
