@@ -1,5 +1,4 @@
-![Image Missing](assets/Chest.png)
-# Goblins Plunder
+#![Image Missing](assets/Chest.png)
 This plugin was created for the BlockGame MMO server (IP: mc.blockgame.info). 
 It allows containers to serve instanced loot to players. Meaning, that each player sees a personal version of the loot.
 
