@@ -1,12 +1,17 @@
 datasource:
   host: "127.0.0.1"
   port: 3306
-  database: "goblins_plunder"
   username: "root"
   password: ""
-  poolSize: 10
+  poolSize: 50
 
-debug: enabled
+plunder:
+  generated-structures:
+    enabled:
+    world-whitelist:
+      - world
+    structure-blacklist:
+  invincible: true
 
 messages:
   plunder:

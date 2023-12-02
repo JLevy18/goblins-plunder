@@ -21,7 +21,7 @@ public class DatabaseCoordinator {
     private final DatabaseManager databaseManager = DatabaseManager.getInstance();
 
     public void createPlunderData(Block block, Player player, LootTablesOverworld loot) {
-        String loot_table_key = "";
+        String loot_table_key = ""; // default loot_table_key as an empty string
         String blockId = UUID.randomUUID().toString();
         String location = "(X: " + block.getX() + ", Y: " + block.getY() + ", Z: " + block.getZ() + ")";
         String blockType = block.getBlockData().getMaterial().toString();

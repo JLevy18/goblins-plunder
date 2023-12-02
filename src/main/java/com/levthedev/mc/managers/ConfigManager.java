@@ -47,5 +47,10 @@ public class ConfigManager {
         return ChatColor.DARK_RED + "" + ChatColor.BOLD + "[GP Error] " + ChatColor.RESET + "";
     }
 
+    public boolean isPlunderInvincible(){
+        return config.getBoolean("plunder.invincible");
+    }
+    
+
 
 }

@@ -7,9 +7,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.bukkit.block.Container;
 import org.bukkit.inventory.ItemStack;
 
+import com.levthedev.mc.dao.Plunder;
+
 public class PlunderManager {
     private static PlunderManager instance = null;
-    private final Map<UUID, String> openPlunderMap = new ConcurrentHashMap<>();
+    private final Map<UUID, Plunder> openPlunderMap = new ConcurrentHashMap<>();
 
     private PlunderManager() {}
 
@@ -24,11 +26,15 @@ public class PlunderManager {
         instance = new PlunderManager();
     }
 
-    public void addOpenPlunder(UUID playerUuid, String chestId) {
-        openPlunderMap.put(playerUuid, chestId);
+    public void addOpenPlunder(UUID playerUuid, Plunder plunder) {
+        openPlunderMap.put(playerUuid, plunder);
     }
 
     public String getPlunderId(UUID playerUuid){
+        return openPlunderMap.get(playerUuid).getId();
+    }
+
+    public Plunder getPlunder(UUID playerUuid){
         return openPlunderMap.get(playerUuid);
     }
 
@@ -36,7 +42,7 @@ public class PlunderManager {
         openPlunderMap.remove(playerUuid);
     }
 
-    public Map<UUID,String> getOpenPlunderMap(){
+    public Map<UUID,Plunder> getOpenPlunderMap(){
         return openPlunderMap;
     }
 

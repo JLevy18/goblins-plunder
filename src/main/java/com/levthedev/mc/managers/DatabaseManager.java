@@ -6,6 +6,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -16,7 +18,7 @@ import org.bukkit.util.Consumer;
 
 import com.levthedev.mc.GoblinsPlunder;
 import com.levthedev.mc.coordinators.DatabaseCoordinator;
-import com.levthedev.mc.dao.Plunder;
+import com.levthedev.mc.dao.PlunderDAO;
 import com.levthedev.mc.dao.PlunderState;
 import com.levthedev.mc.utility.PlunderCallback;
 import com.zaxxer.hikari.HikariConfig;
@@ -150,16 +152,17 @@ public class DatabaseManager {
             String query = "CREATE TABLE plunder_state (" +
                            "player_uuid VARCHAR(36) NOT NULL," +
                            "pb_id VARCHAR(36) NOT NULL," +
+                           "worldName VARCHAR(255) NOT NULL," +
                            "state BLOB NOT NULL," +
                            "PRIMARY KEY (player_uuid, pb_id)," +
-                           "FOREIGN KEY (pb_id) REFERENCES plunder_blocks(id));";
+                           "FOREIGN KEY (pb_id) REFERENCES plunder_blocks(id) ON DELETE CASCADE);";
             stmt.executeUpdate(query);
         }
     }
 
     public void resetPlunderStateTableAsync() {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            String sql = "TRUNCATE TABLE plunder_state";
+            String sql = "DELETE FROM plunder_state";
     
             try (Connection conn = dataSource.getConnection();
                  Statement stmt = conn.createStatement()) {
@@ -203,18 +206,19 @@ public class DatabaseManager {
 
     }
 
-    public void createPlunderStateAsync(String playerUuid, String pbId, byte[] state){
+    public void createPlunderStateAsync(String playerUuid, String pbId, String worldName, byte[] state){
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             // Database operation
-            String sql = "INSERT INTO plunder_state (player_uuid, pb_id, state) VALUES (?, ?, ?) " +
+            String sql = "INSERT INTO plunder_state (player_uuid, pb_id, worldName, state) VALUES (?, ?, ?, ?) " +
                          "ON DUPLICATE KEY UPDATE state = ?;"; // Adjust SQL as needed
     
             try (Connection conn = dataSource.getConnection();
                  PreparedStatement stmt = conn.prepareStatement(sql)) {
                 stmt.setString(1, playerUuid);
                 stmt.setString(2, pbId);
-                stmt.setBytes(3, state);
-                stmt.setBytes(4, state); // For the ON DUPLICATE KEY clause
+                stmt.setString(3, worldName);
+                stmt.setBytes(4, state);
+                stmt.setBytes(5, state); // For the ON DUPLICATE KEY clause
                 stmt.executeUpdate();
             } catch (SQLException e) {
                 System.err.println("Failed to save interaction to the database");
@@ -226,7 +230,7 @@ public class DatabaseManager {
 
 
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            Plunder plunder = null;
+            PlunderDAO plunder = null;
             String sql = "SELECT * FROM plunder_blocks WHERE id = ?";
 
             try (Connection conn = dataSource.getConnection();
@@ -236,19 +240,19 @@ public class DatabaseManager {
                 ResultSet rs = stmt.executeQuery();
         
                 if (rs.next()) {
-                    plunder = new Plunder(rs.getString("id"), rs.getString("location"), rs.getString("block_type"), rs.getString("loot_table_key"), rs.getBlob("contents"), "");
+                    plunder = new PlunderDAO(rs.getString("id"), rs.getString("location"), rs.getString("block_type"), rs.getString("loot_table_key"), rs.getBytes("contents"), "");
                 }
 
             } catch (SQLException e) {
                 String error = ChatColor.DARK_RED + "" + ChatColor.BOLD + "[Database Error]: " + e.getMessage();
-                plunder = new Plunder(null,null,null,null,null, error);
+                plunder = new PlunderDAO(null,null,null,null,null, error);
             }
 
 
 
             // Callback to the main thread
 
-            final Plunder response = plunder;
+            final PlunderDAO response = plunder;
             Bukkit.getScheduler().runTask(GoblinsPlunder.getInstance(), () -> callback.onQueryFinish(response));
 
         });
@@ -280,6 +284,50 @@ public class DatabaseManager {
             // Callback to the main thread
             final PlunderState response = plunderState;
             Bukkit.getScheduler().runTask(plugin, () -> callback.accept(response));
+        });
+    }
+
+    public void deletePlunderBlocksByIdsAsync(List<String> blockIds) {
+        if (blockIds == null || blockIds.isEmpty()) {
+            return; // Nothing to delete
+        }
+    
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            String sql = "DELETE FROM plunder_blocks WHERE id IN (" + String.join(",", Collections.nCopies(blockIds.size(), "?")) + ")";
+    
+            try (Connection conn = dataSource.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(sql)) {
+                
+                int index = 1;
+                for (String id : blockIds) {
+                    stmt.setString(index++, id);
+                }
+                
+                stmt.executeUpdate();
+                System.out.println("Deleted " + blockIds.size() + " plunder_blocks entries.");
+    
+            } catch (SQLException e) {
+                e.printStackTrace();
+                System.err.println("Error deleting plunder_blocks entries: " + e.getMessage());
+            }
+        });
+    }
+
+    public void deletePlunderStateByWorldAsync(String worldName) {
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            String sql = "DELETE FROM plunder_state WHERE worldName = ?";
+    
+            try (Connection conn = dataSource.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(sql)) {
+                
+                stmt.setString(1, worldName);
+                stmt.executeUpdate();
+                System.out.println("plunder_state entries for world " + worldName + " have been deleted.");
+    
+            } catch (SQLException e) {
+                e.printStackTrace();
+                System.err.println("Error deleting plunder_state entries for world " + worldName + ": " + e.getMessage());
+            }
         });
     }
 

@@ -1,5 +1,6 @@
 package com.levthedev.mc.listeners;
 
+import java.io.IOException;
 import java.util.Random;
 
 import org.bukkit.Bukkit;
@@ -21,18 +22,17 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
 import com.levthedev.mc.GoblinsPlunder;
+import com.levthedev.mc.dao.Plunder;
 import com.levthedev.mc.managers.ConfigManager;
 import com.levthedev.mc.managers.DatabaseManager;
 import com.levthedev.mc.managers.PlunderManager;
 import com.levthedev.mc.utility.Serializer;
 
-import net.md_5.bungee.api.ChatColor;
-
 public class OpenPlunderListener implements Listener {
 
     @EventHandler
     @SuppressWarnings("deprecation")
-    public void onPlunderInteract(PlayerInteractEvent event) {
+    public void onPlunderOpen(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         if (event.isCancelled()) return;
 
@@ -49,7 +49,11 @@ public class OpenPlunderListener implements Listener {
                     event.setCancelled(true);
                     String blockId = con.get(new NamespacedKey(GoblinsPlunder.getInstance(), "blockid"), PersistentDataType.STRING);
 
-                    PlunderManager.getInstance().addOpenPlunder(player.getUniqueId(), blockId);
+                    
+                    Plunder plunder = new Plunder(blockId, null, null, null, chest.getWorld().getName(), null);
+
+
+                    PlunderManager.getInstance().addOpenPlunder(player.getUniqueId(), plunder);
 
                     DatabaseManager.getInstance().getPlunderStateByIdAsync(player.getUniqueId(), blockId, stateResponse -> {
                         if (stateResponse == null || stateResponse.getPlayerUuid() == null) {
@@ -72,7 +76,20 @@ public class OpenPlunderListener implements Listener {
         DatabaseManager.getInstance().getPlunderDataByIdAsync(blockId, response -> {
 
             Bukkit.getScheduler().runTask(GoblinsPlunder.getInstance(), () -> {
-                if (response != null && response.getId() != null && response.getLootTableKey() != null) {
+                if (response.getLootTableKey() != null && !response.getLootTableKey().equalsIgnoreCase("")) {
+                    //Play sound
+                    chest.getLocation().getWorld().playSound(chest.getLocation(), Sound.BLOCK_CHEST_OPEN, 1.0f, 1.0f);
+
+                    //Open fake chest
+                    Inventory playerChest = Bukkit.createInventory(player, InventoryType.CHEST, ConfigManager.getInstance().getPlunderTitle());
+                    LootTable lootTable = Bukkit.getLootTable(NamespacedKey.minecraft(response.getLootTableKey()));
+                    LootContext.Builder builder = new LootContext.Builder(player.getLocation());
+
+                    lootTable.fillInventory(playerChest, new Random(), builder.build());
+                    
+                    player.openInventory(playerChest);
+                    
+                } else if (response.getContents() != null){ // Manually filled and added chests
 
                     //Play sound
                     chest.getLocation().getWorld().playSound(chest.getLocation(), Sound.BLOCK_CHEST_OPEN, 1.0f, 1.0f);
@@ -80,15 +97,18 @@ public class OpenPlunderListener implements Listener {
                     //Open fake chest
                     Inventory playerChest = Bukkit.createInventory(player, InventoryType.CHEST, ConfigManager.getInstance().getPlunderTitle());
                     
-                    if (!response.getLootTableKey().equalsIgnoreCase("")){
-                        LootTable lootTable = Bukkit.getLootTable(NamespacedKey.minecraft(response.getLootTableKey()));
-                        LootContext.Builder builder = new LootContext.Builder(player.getLocation());
+                    ItemStack[] contents = null;
 
-                        lootTable.fillInventory(playerChest, new Random(), builder.build());
-                        
-                        player.openInventory(playerChest);
+                    try {
+                        contents = Serializer.fromBase64(response.getContents());
+                    } catch (Exception e) {
+                        System.err.println("[GP ERROR] " + e.getCause() +  " - " + e.getMessage());
                     }
-                    System.out.println(response.getBlockType() + " " + response.getId() + " " + response.getLootTableKey()); 
+
+                    playerChest.setContents(contents);
+                    player.openInventory(playerChest);
+
+                    
                 } else if ( response != null && response.getId() == null){
                     player.sendMessage(response.getResponseMessage());
                 } else {

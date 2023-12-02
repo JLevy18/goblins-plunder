@@ -11,7 +11,8 @@ F:\Documents\VSCode Workspace\goblins-plunder\src\main\java\com\levthedev\mc\uti
 F:\Documents\VSCode Workspace\goblins-plunder\src\main\java\com\levthedev\mc\managers\DatabaseManager.java
 F:\Documents\VSCode Workspace\goblins-plunder\src\main\java\com\levthedev\mc\commands\SubCommand.java
 F:\Documents\VSCode Workspace\goblins-plunder\src\main\java\com\levthedev\mc\managers\ConfigManager.java
-F:\Documents\VSCode Workspace\goblins-plunder\src\main\java\com\levthedev\mc\listeners\AddListener.java
+F:\Documents\VSCode Workspace\goblins-plunder\src\main\java\com\levthedev\mc\dao\PlunderDAO.java
+F:\Documents\VSCode Workspace\goblins-plunder\src\main\java\com\levthedev\mc\listeners\RemovePlunderListener.java
 F:\Documents\VSCode Workspace\goblins-plunder\src\main\java\com\levthedev\mc\utility\PlunderCallback.java
 F:\Documents\VSCode Workspace\goblins-plunder\src\main\java\com\levthedev\mc\listeners\ClosePlunderListener.java
 F:\Documents\VSCode Workspace\goblins-plunder\src\main\java\com\levthedev\mc\managers\PlunderManager.java
@@ -19,3 +20,4 @@ F:\Documents\VSCode Workspace\goblins-plunder\src\main\java\com\levthedev\mc\dao
 F:\Documents\VSCode Workspace\goblins-plunder\src\main\java\com\levthedev\mc\commands\subcommands\ReloadCommand.java
 F:\Documents\VSCode Workspace\goblins-plunder\src\main\java\com\levthedev\mc\listeners\OpenPlunderListener.java
 F:\Documents\VSCode Workspace\goblins-plunder\src\main\java\com\levthedev\mc\commands\subcommands\RestockCommand.java
+F:\Documents\VSCode Workspace\goblins-plunder\src\main\java\com\levthedev\mc\listeners\AddPlunderListener.java

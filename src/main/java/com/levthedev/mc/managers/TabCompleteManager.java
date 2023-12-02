@@ -31,6 +31,7 @@ public class TabCompleteManager implements TabCompleter {
         }
 
         refillOptions.add(ChatColor.ITALIC + "<World>");
+        refillOptions.add("all");
 
     }
 

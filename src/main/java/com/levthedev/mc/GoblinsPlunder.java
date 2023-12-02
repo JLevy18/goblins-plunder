@@ -7,9 +7,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.levthedev.mc.coordinators.DatabaseCoordinator;
-import com.levthedev.mc.listeners.AddListener;
+import com.levthedev.mc.listeners.AddPlunderListener;
 import com.levthedev.mc.listeners.ClosePlunderListener;
 import com.levthedev.mc.listeners.OpenPlunderListener;
+import com.levthedev.mc.listeners.RemovePlunderListener;
 import com.levthedev.mc.managers.PlunderManager;
 import com.levthedev.mc.managers.CommandManager;
 import com.levthedev.mc.managers.ConfigManager;
@@ -67,7 +68,8 @@ public final class GoblinsPlunder extends JavaPlugin {
 
     // The order these are registered in is important because Bukkit API calls duplicate events synchronously in the order that they were registered
     private void populateListeners(){
-        listeners.put("add", new AddListener());
+        listeners.put("add", new AddPlunderListener());
+        listeners.put("remove", new RemovePlunderListener());
         listeners.put("open", new OpenPlunderListener());
         listeners.put("close", new ClosePlunderListener());
     }

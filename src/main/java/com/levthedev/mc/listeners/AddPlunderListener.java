@@ -6,8 +6,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.NamespacedKey;
-import org.bukkit.block.Barrel;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Container;
@@ -16,8 +16,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.loot.LootTable;
 
 import com.levthedev.mc.managers.ConfigManager;
@@ -27,7 +27,7 @@ import com.levthedev.mc.utility.LootTablesOverworld;
 
 import net.md_5.bungee.api.ChatColor;
 
-public class AddListener implements Listener {
+public class AddPlunderListener implements Listener {
 
     // This is a set of the players that are concurrently running the command
     private Set<Player> activePlayers = new HashSet<>();
@@ -48,8 +48,11 @@ public class AddListener implements Listener {
     }
 
 
+
+    // Add Plunder using command
+
     @EventHandler
-    public void onAddCommand(PlayerInteractEvent event) {
+    public void onAddPlunder(PlayerInteractEvent event) {
         Player player = event.getPlayer();
 
         if (!activePlayers.contains(player)) return;
@@ -77,13 +80,6 @@ public class AddListener implements Listener {
                             chest.update();
 
                         }
-            
-                        if (container instanceof Barrel){
-                            Barrel barrel = (Barrel) container;
-            
-                            barrel.setLootTable(lootTable);
-                            barrel.update();
-                        }
 
                         DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderData(clickedBlock, event.getPlayer(), activeLootTables.get(player));
             
@@ -110,4 +106,13 @@ public class AddListener implements Listener {
         setActive(player, false);
     }
     
+    // Generated Structures Listener
+
+    @EventHandler
+    public void onAddPlunder(ChunkLoadEvent event){
+        Chunk chunk = event.getChunk();
+
+        
+
+    }
 }

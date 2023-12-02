@@ -10,13 +10,16 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class Plunder {
+public class PlunderDAO {
 
+    @NonNull
     private String id;
+    @NonNull
     private String location;
+    @NonNull
     private String blockType;
     private String lootTableKey;
-    private String worldName;
     private byte[] contents;
 
+    private String responseMessage;
 }

@@ -18,7 +18,7 @@ public class ClosePlunderListener implements Listener {
 
 
     @EventHandler
-    public void onInventoryClose(InventoryCloseEvent event) {
+    public void onPlunderClose(InventoryCloseEvent event) {
 
         Inventory inv = event.getInventory();
 
@@ -40,7 +40,8 @@ public class ClosePlunderListener implements Listener {
             }
 
             // Save the interaction asynchronously to the database
-            DatabaseManager.getInstance().createPlunderStateAsync(playerUuid, pbId, state);
+
+            DatabaseManager.getInstance().createPlunderStateAsync(playerUuid, pbId, plunderManager.getPlunder(player.getUniqueId()).getWorldName(), state);
             plunderManager.removeOpenPlunder(player.getUniqueId());
         }
     }
