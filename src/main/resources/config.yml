@@ -5,15 +5,20 @@ datasource:
   password: ""
   poolSize: 50
 
+debug:
+  enabled: false
+
 plunder:
   generated-structures:
-    enabled:
+    enabled: true
     world-whitelist:
-      - world
+      - "world"
     structure-blacklist:
   invincible: true
 
 messages:
+  broadcast-restock:
+    enabled: true
   plunder:
     title: "&5Plunder"
   

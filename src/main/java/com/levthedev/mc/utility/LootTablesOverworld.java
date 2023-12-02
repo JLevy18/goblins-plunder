@@ -1,5 +1,9 @@
 package com.levthedev.mc.utility;
 
+import org.checkerframework.common.reflection.qual.GetClass;
+
+import com.levthedev.mc.managers.ConfigManager;
+
 public enum LootTablesOverworld {
     ABANDONED_MINESHAFT("chests/abandoned_mineshaft"),
     VILLAGE_ARMORER("chests/village/village_armorer"),
@@ -29,7 +33,12 @@ public enum LootTablesOverworld {
     SHIPWRECK_TREASURE("chests/shipwreck_treasure"),
     IGLOO_CHEST("chests/igloo_chest"),
     RUINED_PORTAL("chests/ruined_portal"),
-    WOODLAND_MANSION("chests/woodland_mansion");
+    WOODLAND_MANSION("chests/woodland_mansion"),
+    JUNGLE_TEMPLE_DISPENSER("chests/jungle_temple_dispenser"),
+    NETHER_BRIDGE("chests/nether_bridge"),
+    UNDERWATER_RUIN_BIG("chests/underwater_ruin_big"),
+    UNDERWATER_RUIN_SMALL("chests/underwater_ruin_small"),
+    VILLAGE_FISHER("chests/village/village_fisher");
 
     private final String key;
 
@@ -39,6 +48,16 @@ public enum LootTablesOverworld {
 
     public String getKey() {
         return key;
+    }
+
+    public static LootTablesOverworld fromKey(String key) {
+
+        for (LootTablesOverworld lootTable : LootTablesOverworld.values()) {
+            if (lootTable.getKey().equals(key)) {
+                return lootTable;
+            }
+        }
+        return null;
     }
 
 }

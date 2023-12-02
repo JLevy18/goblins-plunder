@@ -35,6 +35,7 @@ public class OpenPlunderListener implements Listener {
     public void onPlunderOpen(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         if (event.isCancelled()) return;
+        if (player.isSneaking()) return;
 
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getHand() == EquipmentSlot.HAND) {
 

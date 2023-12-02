@@ -1,5 +1,7 @@
 package com.levthedev.mc.managers;
 
+import java.util.List;
+
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -32,6 +34,10 @@ public class ConfigManager {
         config = plugin.getConfig();
     }
 
+    public boolean isDebug(){
+        return config.getBoolean("debug.enabled");
+    }
+
 
     public String getPlunderTitle(){
 
@@ -50,6 +56,21 @@ public class ConfigManager {
     public boolean isPlunderInvincible(){
         return config.getBoolean("plunder.invincible");
     }
+
+    // Generated Structures
+
+    public boolean isGSEnabled(){
+        return config.getBoolean("plunder.generated-structures.enabled");
+    }
+
+    public List<?> getGSWorldWhitelist(){
+        return config.getList("plunder.generated-structures.world-whitelist");
+    }
+
+    public List<?> getGSBlacklist(){
+        return config.getList("plunder.generated-structures.structure-blacklist");
+    }
+    
     
 
 

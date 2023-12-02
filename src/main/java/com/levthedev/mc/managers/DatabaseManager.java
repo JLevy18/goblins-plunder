@@ -1,5 +1,6 @@
 package com.levthedev.mc.managers;
 
+import java.io.ObjectInputFilter.Config;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -196,11 +197,23 @@ public class DatabaseManager {
                 stmt.setString(4, loot_table_key);
                 stmt.setBytes(5, contents);
                 stmt.executeUpdate();
+                
+                if (player != null) {
+                    player.sendMessage(ConfigManager.getInstance().getPrefix() + ChatColor.DARK_GREEN + "Plunder successfully created:\n" + ChatColor.RESET + "" + ChatColor.GREEN + blockId);
+                }
 
-                player.sendMessage(ConfigManager.getInstance().getPrefix() + ChatColor.DARK_GREEN + "Plunder successfully created:\n" + ChatColor.RESET + "" + ChatColor.GREEN + blockId);
+
+                if (ConfigManager.getInstance().isDebug()){
+                    System.out.println( "Plunder Added:\n"
+                                        + blockId + "\n" 
+                                        + loot_table_key + "\n"
+                                        + location + "\n");
+                }
+
             } catch (SQLException e) {
-
-                player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.DARK_RED + "Database Error: " + ChatColor.RESET + "" + ChatColor.RED + e.getMessage());
+                if (player != null) {
+                    player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.DARK_RED + "Database Error: " + ChatColor.RESET + "" + ChatColor.RED + e.getMessage());
+                }
             }
         });
 

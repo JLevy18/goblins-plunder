@@ -8,9 +8,12 @@ import java.util.Set;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.NamespacedKey;
+import org.bukkit.block.Barrel;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Container;
+import org.bukkit.block.TileState;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -65,7 +68,7 @@ public class AddPlunderListener implements Listener {
             if (clickedBlock != null) {
                 
                 // Block must be a container
-                if (clickedBlock.getState() instanceof Container){
+                if (clickedBlock.getState() instanceof TileState){
                     
                     Container container = (Container) clickedBlock.getState();
 
@@ -78,7 +81,6 @@ public class AddPlunderListener implements Listener {
             
                             chest.setLootTable(lootTable);
                             chest.update();
-
                         }
 
                         DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderData(clickedBlock, event.getPlayer(), activeLootTables.get(player));
@@ -110,9 +112,23 @@ public class AddPlunderListener implements Listener {
 
     @EventHandler
     public void onAddPlunder(ChunkLoadEvent event){
+
+        if (!ConfigManager.getInstance().isGSEnabled()) return;
+        if (!ConfigManager.getInstance().getGSWorldWhitelist().contains(event.getWorld().getName())) return;
+        if (!event.isNewChunk()) return;
+
         Chunk chunk = event.getChunk();
 
-        
+        for (BlockState blockState : chunk.getTileEntities()){
+            if (!(blockState instanceof Chest)) continue;
+            Chest chest = (Chest) blockState;
+            if (chest.getLootTable() == null) continue;
+
+            DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderData(chest.getBlock(), null, LootTablesOverworld.fromKey(chest.getLootTable().getKey().getKey()) != null ? LootTablesOverworld.fromKey(chest.getLootTable().getKey().getKey()) : null);
+
+        }
+   
+
 
     }
 }
