@@ -129,12 +129,23 @@ public class RemovePlunderListener implements Listener {
         if (event.getSource().getHolder() instanceof Container){
            if (event.getDestination().getHolder() instanceof Hopper || event.getDestination().getHolder() instanceof HopperMinecart ){
                 Container con = (Container) event.getSource().getHolder();
-
+            
                 if (con.getPersistentDataContainer().getKeys().toString().contains("goblinsplunder")){
                     event.setCancelled(true);
                 }
            }
+        } else if (event.getSource().getHolder() instanceof StorageMinecart){
+
+            if (event.getDestination().getHolder() instanceof Hopper || event.getDestination().getHolder() instanceof HopperMinecart ){
+                StorageMinecart cart = (StorageMinecart) event.getSource().getHolder();
+            
+                if (cart.getPersistentDataContainer().getKeys().toString().contains("goblinsplunder")){
+                    event.setCancelled(true);
+                }
+           }
         }
+
+
 
     }
 }
