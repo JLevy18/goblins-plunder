@@ -3,7 +3,14 @@ datasource:
   port: 3306
   username: "root"
   password: ""
-  poolSize: 50
+  # The plugin uses HikariCP to pool connections.
+  # poolSize = How many open connections the plugin will manage
+  # This value must be greater than 0. A value of 1 is technically a standard database and not optimal
+  # The value of this will vary depending on each server's individual needs.
+  # Setting the value to high can cause just as many performance issues as not high enough. Needs to be dialed in.
+  # This is the formula given from the developer of HikariCP: connections = ((core_count * 2) + effective_spindle_count)
+  # For more information - https://github.com/brettwooldridge/HikariCP/wiki/About-Pool-Sizing#connections--core_count--2--effective_spindle_count
+  poolSize: 50  
 
 debug:
   enabled: false
