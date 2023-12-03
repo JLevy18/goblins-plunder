@@ -8,7 +8,6 @@ It allows containers to serve instanced loot to players. Meaning, that each play
 ### Features
 - Generated Structures
   - Automatically add containers from generated structures to the database.
-  - *Minecarts Coming Soon*
 - Manually add loot containers
 - Add an optional LootTable on the container
 - Make loot invincible from destruction
