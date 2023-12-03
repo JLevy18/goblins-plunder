@@ -6,26 +6,27 @@ import java.util.Map;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Barrel;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Container;
-import org.bukkit.block.TileState;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.minecart.StorageMinecart;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.loot.LootTable;
 
+import com.levthedev.mc.GoblinsPlunder;
 import com.levthedev.mc.managers.ConfigManager;
 import com.levthedev.mc.managers.DatabaseManager;
 import com.levthedev.mc.managers.PlunderManager;
@@ -55,6 +56,36 @@ public class AddPlunderListener implements Listener {
 
 
 
+    @EventHandler
+    public void onCreateDoubleChest(BlockPlaceEvent event) {
+
+        Block placedBlock = event.getBlockPlaced();
+        
+        // Check if the placed block is a chest
+        if (placedBlock.getType() == Material.CHEST) {
+            // Get all blocks adjacent to the placed chest
+            Block[] adjacentBlocks = new Block[]{
+                placedBlock.getRelative(BlockFace.NORTH),
+                placedBlock.getRelative(BlockFace.SOUTH),
+                placedBlock.getRelative(BlockFace.EAST),
+                placedBlock.getRelative(BlockFace.WEST)
+            };
+
+            // Check each adjacent block
+            for (Block adjacentBlock : adjacentBlocks) {
+                if (adjacentBlock.getType() == Material.CHEST) {
+
+                    Chest chest = (Chest) adjacentBlock.getState();
+                    if (!(chest.getPersistentDataContainer().getKeys().toString().contains("goblinsplunder"))) return;
+
+                    event.setCancelled(true);    
+                    event.getPlayer().sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.RED + "you can't create a double chest using this loot.");
+                    return;
+                }
+            }
+        }
+    }  
+
     // Add Plunder using command (Barrels and Chests)
 
     @EventHandler
@@ -72,7 +103,7 @@ public class AddPlunderListener implements Listener {
             if (clickedBlock != null) {
                 
                 // Block must be a container
-                if (clickedBlock.getState() instanceof TileState){
+                if (clickedBlock.getState() instanceof Container){
                     
                     Container container = (Container) clickedBlock.getState();
 
@@ -92,7 +123,7 @@ public class AddPlunderListener implements Listener {
                             barrel.update();
                         } 
 
-                        DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderData(clickedBlock, event.getPlayer(), activeLootTables.get(player));
+                        DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderDataByBlock(clickedBlock, event.getPlayer(), activeLootTables.get(player));
             
                     } else {
 
@@ -102,7 +133,7 @@ public class AddPlunderListener implements Listener {
                             return;
                         }
 
-                        DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderData(clickedBlock, event.getPlayer(), activeLootTables.get(player));
+                        DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderDataByBlock(clickedBlock, event.getPlayer(), activeLootTables.get(player));
                     }
 
                     
@@ -116,30 +147,6 @@ public class AddPlunderListener implements Listener {
 
         setActive(player, false);
     }
-    
-    // Add Plunder using command (Minecarts)
-
-    // @EventHandler
-    // public void onAddPlunder(PlayerInteractEntityEvent event) {
-
-    //     Player player = event.getPlayer();
-    //     if (!activePlayers.contains(player)) return;
-
-    //     if (activeLootTables.get(player) != null){
-
-    //         Entity entity = event.getRightClicked();
-    //         LootTable lootTable = Bukkit.getLootTable(NamespacedKey.minecraft(activeLootTables.get(player).getKey()));
-
-
-    //         if (entity instanceof StorageMinecart) {
-    //             StorageMinecart minecartChest = (StorageMinecart) entity;
-
-    //             minecartChest.setLootTable(lootTable);
-
-    //         } 
-    //     }
-
-    // }
 
 
     // Generated Structures Listener
@@ -151,18 +158,40 @@ public class AddPlunderListener implements Listener {
         if (!ConfigManager.getInstance().getGSWorldWhitelist().contains(event.getWorld().getName())) return;
         if (!event.isNewChunk()) return;
 
-        Chunk chunk = event.getChunk();
+        BlockState[] tileEntities = event.getChunk().getTileEntities();
+        Entity[] entities = event.getChunk().getEntities();
 
-        for (BlockState blockState : chunk.getTileEntities()){
-            if (!(blockState instanceof Chest)) continue;
-            Chest chest = (Chest) blockState;
-            if (chest.getLootTable() == null) continue;
+        Bukkit.getScheduler().runTaskAsynchronously(GoblinsPlunder.getInstance(), () -> {
 
-            DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderData(chest.getBlock(), null, LootTablesOverworld.fromKey(chest.getLootTable().getKey().getKey()) != null ? LootTablesOverworld.fromKey(chest.getLootTable().getKey().getKey()) : null);
+            for (BlockState blockState : tileEntities){
+                if (blockState instanceof Chest){
 
-        }
-   
+                    Bukkit.getScheduler().runTask(GoblinsPlunder.getInstance(), () -> {            
+                        Chest chest = (Chest) blockState;
+                        if (chest.getLootTable() != null){
+                            DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderDataByBlock(chest.getBlock(), null, LootTablesOverworld.fromKey(chest.getLootTable().getKey().getKey()) != null ? LootTablesOverworld.fromKey(chest.getLootTable().getKey().getKey()) : null);
 
+                        }
+                        
+                    });
+
+                }
+            }
+
+            for (Entity entity : entities) {
+                if (entity instanceof StorageMinecart) {
+
+                    Bukkit.getScheduler().runTask(GoblinsPlunder.getInstance(), () -> {
+                        StorageMinecart cart = (StorageMinecart) entity;
+                        if (cart.getLootTable() != null){
+                            DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderDataByEntity(entity, null, LootTablesOverworld.fromKey(cart.getLootTable().getKey().getKey()) != null ? LootTablesOverworld.fromKey(cart.getLootTable().getKey().getKey()) : null);
+                        }
+
+                    });
+                }
+            }
+
+        });
 
     }
 }

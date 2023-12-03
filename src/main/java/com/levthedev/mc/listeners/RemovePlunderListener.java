@@ -6,16 +6,22 @@ import java.util.List;
 
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
-import org.bukkit.block.Chest;
 import org.bukkit.block.Container;
 import org.bukkit.block.Hopper;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.entity.minecart.HopperMinecart;
+import org.bukkit.entity.minecart.StorageMinecart;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
+import org.bukkit.event.vehicle.VehicleDestroyEvent;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.util.RayTraceResult;
+import org.bukkit.util.Vector;
 
 import com.levthedev.mc.GoblinsPlunder;
 import com.levthedev.mc.managers.ConfigManager;
@@ -52,6 +58,25 @@ public class RemovePlunderListener implements Listener {
                 }
             }
         }
+    }
+
+    @EventHandler
+    public void onRemovePlunder(VehicleDestroyEvent event) {
+
+        if (!(event.getVehicle() instanceof StorageMinecart)) return;
+        if (!(event.getAttacker() instanceof Player)) return;
+
+        StorageMinecart cart = (StorageMinecart) event.getVehicle();
+
+        if (!(cart.getPersistentDataContainer().getKeys().toString().contains("goblinsplunder"))) return;
+
+        if (ConfigManager.getInstance().isPlunderInvincible()) {
+            event.setCancelled(true);
+        }else{
+            cart.getInventory().clear();
+            DatabaseManager.getInstance().deletePlunderBlocksByIdsAsync(Arrays.asList(cart.getPersistentDataContainer().get(new NamespacedKey(GoblinsPlunder.getInstance(), "blockid"), PersistentDataType.STRING)));
+        }
+
     }
 
     @EventHandler
