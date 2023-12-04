@@ -1,9 +1,7 @@
 package com.levthedev.mc.commands.subcommands;
 
-import org.bukkit.Bukkit;
-import org.bukkit.World;
+
 import org.bukkit.entity.Player;
-import org.bukkit.loot.LootTable;
 
 import com.levthedev.mc.commands.SubCommand;
 import com.levthedev.mc.listeners.AddPlunderListener;

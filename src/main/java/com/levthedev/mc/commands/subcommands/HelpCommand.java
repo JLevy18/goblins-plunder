@@ -35,6 +35,7 @@ public class HelpCommand extends SubCommand {
        ChatColor.DARK_GREEN +"/gp reload " + ChatColor.GREEN + ": Reload the config file.\n" +
        ChatColor.DARK_GREEN +"/gp add" + ChatColor.GREEN + ": Add a plunder container to the database.\n" +
        ChatColor.DARK_GREEN +"/gp restock <World> " + ChatColor.GREEN + ": Restock the plunders in a world.\n" +
+       ChatColor.DARK_GREEN +"/gp remove <World> " + ChatColor.GREEN + ": Remove the plunders in a world.\n" +
         
        ChatColor.GOLD + "" + ChatColor.BOLD + "=========================================\n"
         

@@ -163,6 +163,7 @@ public class DatabaseManager {
             String query = "CREATE TABLE plunder_blocks (" +
                            "id VARCHAR(36) PRIMARY KEY," +
                            "location VARCHAR(255) NOT NULL UNIQUE," +
+                           "worldName VARCHAR(255) NOT NULL," +
                            "block_type VARCHAR(255) NOT NULL," +
                            "loot_table_key VARCHAR(255), " +
                            "contents BLOB);";
@@ -206,18 +207,19 @@ public class DatabaseManager {
     // ##########################
 
 
-    public void createPlunderDataAsync(String blockId, String location, String blockType, String loot_table_key, byte[] contents, Player player) {
+    public void createPlunderDataAsync(String blockId, String worldName, String location, String blockType, String loot_table_key, byte[] contents, Player player) {
 
 
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            String sql = "INSERT INTO plunder_blocks (id, location, block_type, loot_table_key, contents) VALUES (?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO plunder_blocks (id, worldName, location, block_type, loot_table_key, contents) VALUES (?, ?, ?, ?, ?, ?)";
             try (Connection conn = dataSource.getConnection();
                  PreparedStatement stmt = conn.prepareStatement(sql)) {
                 stmt.setString(1, blockId);
-                stmt.setString(2, location);
-                stmt.setString(3, blockType);
-                stmt.setString(4, loot_table_key);
-                stmt.setBytes(5, contents);
+                stmt.setString(2, worldName);
+                stmt.setString(3, location);
+                stmt.setString(4, blockType);
+                stmt.setString(5, loot_table_key);
+                stmt.setBytes(6, contents);
                 stmt.executeUpdate();
                 
                 if (player != null) {
@@ -344,6 +346,30 @@ public class DatabaseManager {
             } catch (SQLException e) {
                 e.printStackTrace();
                 System.err.println("Error deleting plunder_blocks entries: " + e.getMessage());
+            }
+        });
+    }
+
+    public void deletePlunderBlocksByWorldAsync(String worldName, Player player){
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            String sql = "DELETE FROM plunder_blocks WHERE worldName = ?";
+    
+            try (Connection conn = dataSource.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(sql)) {
+                
+                stmt.setString(1, worldName);
+                stmt.executeUpdate();
+
+                player.sendMessage(ConfigManager.getInstance().getPrefix() + ChatColor.GREEN + "Deleted all entries in " + worldName);
+
+                System.out.println("plunder_block entries for world " + worldName + " have been deleted.");
+    
+            } catch (SQLException e) {
+
+                player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.RED + "Failed deleting entries in " + worldName);
+
+                e.printStackTrace();
+                System.err.println("Error deleting plunder_block entries for world " + worldName + ": " + e.getMessage());
             }
         });
     }

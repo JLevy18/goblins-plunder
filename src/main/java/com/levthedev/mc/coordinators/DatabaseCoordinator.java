@@ -23,9 +23,10 @@ public class DatabaseCoordinator {
 
     public void createPlunderDataByBlock(Block block, Player player, String loot_table_key) {
         String blockId = UUID.randomUUID().toString();
-        String location = "(" + block.getWorld().getName() + ", X: " + block.getX() + ", Y: " + block.getY() + ", Z: " + block.getZ() + ")";
+        String location = "(X: " + block.getX() + ", Y: " + block.getY() + ", Z: " + block.getZ() + ")";
         String blockType = block.getBlockData().getMaterial().toString();
-        
+        String worldName = block.getWorld().getName();
+
         // We expect the block to have been validated as a Container by this point
         Container container = (Container) block.getState();
 
@@ -44,15 +45,16 @@ public class DatabaseCoordinator {
         container.getPersistentDataContainer().set(key, PersistentDataType.STRING, blockId);
         container.update();
 
-        databaseManager.createPlunderDataAsync(blockId, location, blockType, loot_table_key, contents, player);
+        databaseManager.createPlunderDataAsync(blockId, worldName, location, blockType, loot_table_key, contents, player);
         
     }
 
     public void createPlunderDataByEntity(Entity entity, Player player, String loot_table_key) {
         String blockId = UUID.randomUUID().toString();
-        String location = "(" + entity.getWorld().getName() + ", X: " + entity.getLocation().getX() + ", Y: " + entity.getLocation().getY() + ", Z: " + entity.getLocation().getZ() + ")";
+        String location = "(X: " + entity.getLocation().getX() + ", Y: " + entity.getLocation().getY() + ", Z: " + entity.getLocation().getZ() + ")";
         String blockType = entity.getType().toString();
-        
+        String worldName = entity.getWorld().getName();
+
         StorageMinecart cart = (StorageMinecart) entity;
 
         byte[] contents = null;
@@ -67,7 +69,7 @@ public class DatabaseCoordinator {
         NamespacedKey key = new NamespacedKey(plugin, "blockId");
         cart.getPersistentDataContainer().set(key, PersistentDataType.STRING, blockId);
 
-        databaseManager.createPlunderDataAsync(blockId, location, blockType, loot_table_key, contents, player);
+        databaseManager.createPlunderDataAsync(blockId, worldName, location, blockType, loot_table_key, contents, player);
         
     }
 

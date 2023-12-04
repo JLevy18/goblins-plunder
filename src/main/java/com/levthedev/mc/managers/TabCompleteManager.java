@@ -14,6 +14,7 @@ public class TabCompleteManager implements TabCompleter {
 
     private final List<String> commands = new ArrayList<>();
     private final List<String> refillOptions = new ArrayList<>();
+    private final List<String> removeOptions = new ArrayList<>();
 
 
     public TabCompleteManager() {
@@ -22,6 +23,9 @@ public class TabCompleteManager implements TabCompleter {
         commands.add("help");
         commands.add("add");
         commands.add("restock");
+        commands.add("remove");
+
+        removeOptions.add(ChatColor.ITALIC + "<World>");
 
         refillOptions.add(ChatColor.ITALIC + "<World>");
         refillOptions.add("all");
@@ -40,6 +44,10 @@ public class TabCompleteManager implements TabCompleter {
 
         if (args.length == 2 && args[0].equalsIgnoreCase("restock")) {
             StringUtil.copyPartialMatches(args[1], refillOptions, completions);
+        }
+
+        if (args.length == 2 && args[0].equalsIgnoreCase("remove")) {
+            StringUtil.copyPartialMatches(args[1], removeOptions, completions);
         }
 
         return completions;
