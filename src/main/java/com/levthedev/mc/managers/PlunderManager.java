@@ -46,13 +46,5 @@ public class PlunderManager {
         return openPlunderMap;
     }
 
-    public boolean isChestEmpty(Container container) {
-        for (ItemStack item : container.getInventory().getContents()) {
-            if (item != null && item.getAmount() > 0) {
-                return false; // Found an item, chest is not empty
-            }
-        }
-        return true; // No items found, chest is empty
-    }
 
 }

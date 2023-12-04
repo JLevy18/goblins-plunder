@@ -32,6 +32,8 @@ import com.levthedev.mc.managers.DatabaseManager;
 import com.levthedev.mc.managers.PlunderManager;
 import com.levthedev.mc.utility.Serializer;
 
+import net.md_5.bungee.api.ChatColor;
+
 public class OpenPlunderListener implements Listener {
 
     @EventHandler
@@ -66,8 +68,10 @@ public class OpenPlunderListener implements Listener {
                             // No existing interaction, fill with loot table items
 
                             if (container instanceof Chest){
+            
                                 fillInventoryWithLoot(Sound.BLOCK_CHEST_OPEN,container.getLocation(), blockId, player);
                             } else if (container instanceof Barrel){
+
                                 fillInventoryWithLoot(Sound.BLOCK_BARREL_OPEN,container.getLocation(), blockId, player);
                             }
 
@@ -84,7 +88,7 @@ public class OpenPlunderListener implements Listener {
             }
         }
     }
-    
+
 
     @EventHandler
     public void onPlunderOpen(PlayerInteractEntityEvent event) {
@@ -98,7 +102,7 @@ public class OpenPlunderListener implements Listener {
 
             if (con.getKeys().toString().contains("goblinsplunder")) {
 
-                // DO NOT LET PLAYER INTERACT WITH THE CART
+                // DO NOT LET PLAYER OPEN THE CHEST
                 event.setCancelled(true);
                 String blockId = con.get(new NamespacedKey(GoblinsPlunder.getInstance(), "blockid"), PersistentDataType.STRING);
                 Plunder plunder = new Plunder(blockId, null, null, null, cart.getWorld().getName(), null);
@@ -124,8 +128,6 @@ public class OpenPlunderListener implements Listener {
 
 
 
-
-    // NEED TO REVIST THIS FOR EDGE CASES
     private void fillInventoryWithLoot(Sound sound, Location location, String blockId, Player player){
         DatabaseManager.getInstance().getPlunderDataByIdAsync(blockId, response -> {
 
@@ -135,17 +137,29 @@ public class OpenPlunderListener implements Listener {
                     if (sound != null && location != null){
                         location.getWorld().playSound(location, sound, 1.0f, 1.0f);
                     }
-
+                    
                     //Open fake chest
                     Inventory playerChest = Bukkit.createInventory(player, InventoryType.CHEST, ConfigManager.getInstance().getPlunderTitle());
-                    LootTable lootTable = Bukkit.getLootTable(NamespacedKey.minecraft(response.getLootTableKey()));
+                    LootTable lootTable = null;
+                    
+                    try {
+                        String[] lootKeySplit = response.getLootTableKey().split(":");
+                        lootTable = Bukkit.getLootTable(NamespacedKey.minecraft(lootKeySplit[1]));
+                    } catch (Exception e) {
+                        player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.RED + "Error generating loot: " + response.getLootTableKey() + " not found.");
+                        PlunderManager.getInstance().getOpenPlunderMap().remove(player.getUniqueId());
+                        return;
+                    }
                     LootContext.Builder builder = new LootContext.Builder(player.getLocation());
 
-                    lootTable.fillInventory(playerChest, new Random(), builder.build());
+                    if (lootTable != null){
+                        lootTable.fillInventory(playerChest, new Random(), builder.build());
+                    }
                     
                     player.openInventory(playerChest);
                     
-                } else if (response.getContents() != null){ // Manually filled and added chests
+                    
+                } else if (response.getContents() != null){ // Filled from contents
 
                     //Play sound
                     if (sound != null && location != null){

@@ -63,6 +63,10 @@ public class ConfigManager {
         return config.getBoolean("plunder.generated-structures.enabled");
     }
 
+    public boolean isBroadcastRestockEnabled(){
+        return config.getBoolean("messages.broadcast-restock.enabled");
+    }
+
     public List<?> getGSWorldWhitelist(){
         return config.getList("plunder.generated-structures.world-whitelist");
     }

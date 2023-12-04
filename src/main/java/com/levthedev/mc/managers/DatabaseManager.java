@@ -60,7 +60,7 @@ public class DatabaseManager {
             if (DatabaseNotFoundException(e)){
 
                 // Failed to find specified database - throw error
-                if (plugin.getConfig().getString("datasource.databaseName").isEmpty()){
+                if (!plugin.getConfig().getString("datasource.databaseName").isEmpty()){
                     throw new RuntimeException("Database connection failed", e);
                 }
 

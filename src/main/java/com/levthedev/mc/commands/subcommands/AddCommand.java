@@ -1,16 +1,14 @@
 package com.levthedev.mc.commands.subcommands;
 
-import java.util.Map;
-
+import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Listener;
+import org.bukkit.loot.LootTable;
 
 import com.levthedev.mc.commands.SubCommand;
 import com.levthedev.mc.listeners.AddPlunderListener;
-import com.levthedev.mc.listeners.OpenPlunderListener;
 import com.levthedev.mc.managers.ConfigManager;
 import com.levthedev.mc.managers.ListenerManager;
-import com.levthedev.mc.utility.LootTablesOverworld;
 
 import net.md_5.bungee.api.ChatColor;
 
@@ -28,7 +26,7 @@ public class AddCommand extends SubCommand{
 
     @Override
     public String getUsage() {
-        return "/gp add <LootTable>";
+        return "/gp add";
     }
 
     @Override
@@ -39,16 +37,8 @@ public class AddCommand extends SubCommand{
         if (args.length == 1) {
             addPlunderListener.setActive(player, true);
             player.sendMessage(ConfigManager.getInstance().getPrefix() + ChatColor.GREEN + "Click a container to convert to plunder");
-        } else if (args.length == 2) {
-
-            try { 
-                addPlunderListener.setLoot(player, LootTablesOverworld.valueOf(args[1]));
-                addPlunderListener.setActive(player, true);
-                player.sendMessage(ConfigManager.getInstance().getPrefix() + ChatColor.GREEN + "Click a container to convert to plunder");
-            } catch (IllegalArgumentException e) {
-                player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.RED + "Invalid LootTable");
-            }
-            
+        } else if (args.length > 1){
+            player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.RED + "Invalid arguments.");
         }
 
     }

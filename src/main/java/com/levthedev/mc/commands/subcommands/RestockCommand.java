@@ -33,7 +33,10 @@ public class RestockCommand extends SubCommand{
 
         if (args.length == 2 && args[1].equalsIgnoreCase("all")) { 
             DatabaseManager.getInstance().resetPlunderStateTableAsync();
-            broadcast();
+
+            if (ConfigManager.getInstance().isBroadcastRestockEnabled()){
+                broadcast();
+            }
         }
 
         // Reset table by world name
@@ -44,7 +47,9 @@ public class RestockCommand extends SubCommand{
                 player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + args[1] + ChatColor.RED + " is not a valid world name.");
             } else {
                 DatabaseManager.getInstance().deletePlunderStateByWorldAsync(args[1]);
-                broadcast(args[1]);
+                if (ConfigManager.getInstance().isBroadcastRestockEnabled()){
+                    broadcast(args[1]);
+                }
             }
         }
 

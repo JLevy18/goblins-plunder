@@ -30,7 +30,6 @@ import com.levthedev.mc.GoblinsPlunder;
 import com.levthedev.mc.managers.ConfigManager;
 import com.levthedev.mc.managers.DatabaseManager;
 import com.levthedev.mc.managers.PlunderManager;
-import com.levthedev.mc.utility.LootTablesOverworld;
 
 import net.md_5.bungee.api.ChatColor;
 
@@ -38,19 +37,12 @@ public class AddPlunderListener implements Listener {
 
     // This is a set of the players that are concurrently running the command
     private Set<Player> activePlayers = new HashSet<>();
-    private Map<Player, LootTablesOverworld> activeLootTables = new HashMap<>();    
-
-
-    public void setLoot(Player player, LootTablesOverworld loot) {
-        activeLootTables.put(player, loot);
-    }
 
     public void setActive(Player player, boolean active) {
         if (active) {
             activePlayers.add(player);
         } else {
             activePlayers.remove(player);
-            activeLootTables.remove(player);
         }
     }
 
@@ -107,35 +99,39 @@ public class AddPlunderListener implements Listener {
                     
                     Container container = (Container) clickedBlock.getState();
 
-                    if (activeLootTables.get(player) != null){
+                    // 1. LootTable
+                    // 2. Inventory Contents
+                    // 3. Error
 
-                        LootTable lootTable = Bukkit.getLootTable(NamespacedKey.minecraft(activeLootTables.get(player).getKey()));
+                    String loot_table_key = null;
 
-                        if (container instanceof Chest){
-                            Chest chest = (Chest) container;
-            
-                            chest.setLootTable(lootTable);
-                            chest.update();
-                        } else if (container instanceof Barrel){
-                            Barrel barrel = (Barrel) container;
-            
-                            barrel.setLootTable(lootTable);
-                            barrel.update();
-                        } 
-
-                        DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderDataByBlock(clickedBlock, event.getPlayer(), activeLootTables.get(player));
-            
-                    } else {
-
-                        if (PlunderManager.getInstance().isChestEmpty(container)){
-                            player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.RED + "The container can't be empty");
+                    if (container instanceof Chest){
+                        Chest chest = (Chest) container;
+                        
+                        // Check if loottable on chest
+                        if (chest.getLootTable() != null){
+                            loot_table_key = chest.getLootTable().getKey().toString();
+                        } else if (chest.getInventory().isEmpty()){ // No loottable, check chest contents
+                            player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.RED + "Failed to add chest to db: LootTable invalid or Container is empty.");
                             setActive(player, false);
                             return;
                         }
 
-                        DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderDataByBlock(clickedBlock, event.getPlayer(), activeLootTables.get(player));
-                    }
+                    } else if (container instanceof Barrel){
+                        Barrel barrel = (Barrel) container;
+        
+                        // Check if loottable on chest
+                        if (barrel.getLootTable() != null){
+                            loot_table_key = barrel.getLootTable().getKey().toString();
+                        } else if (barrel.getInventory().isEmpty()){ // No loottable, check chest contents
+                            player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.RED + "Failed to add chest to db: LootTable invalid or Container is empty.");
+                            setActive(player, false);
+                            return;
+                        }
+                    } 
 
+                    DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderDataByBlock(clickedBlock, event.getPlayer(), loot_table_key);
+        
                     
                 } else {
                     event.getPlayer().sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.DARK_RED + "Invalid block type: " + ChatColor.RESET + "" + ChatColor.RED + "block must be a container.");
@@ -169,7 +165,7 @@ public class AddPlunderListener implements Listener {
                     Bukkit.getScheduler().runTask(GoblinsPlunder.getInstance(), () -> {            
                         Chest chest = (Chest) blockState;
                         if (chest.getLootTable() != null){
-                            DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderDataByBlock(chest.getBlock(), null, LootTablesOverworld.fromKey(chest.getLootTable().getKey().getKey()) != null ? LootTablesOverworld.fromKey(chest.getLootTable().getKey().getKey()) : null);
+                            DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderDataByBlock(chest.getBlock(), null, chest.getLootTable().toString());
 
                         }
                         
@@ -184,7 +180,7 @@ public class AddPlunderListener implements Listener {
                     Bukkit.getScheduler().runTask(GoblinsPlunder.getInstance(), () -> {
                         StorageMinecart cart = (StorageMinecart) entity;
                         if (cart.getLootTable() != null){
-                            DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderDataByEntity(entity, null, LootTablesOverworld.fromKey(cart.getLootTable().getKey().getKey()) != null ? LootTablesOverworld.fromKey(cart.getLootTable().getKey().getKey()) : null);
+                            DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderDataByEntity(entity, null, cart.getLootTable().toString());
                         }
 
                     });

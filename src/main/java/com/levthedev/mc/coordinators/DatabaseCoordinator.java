@@ -13,7 +13,6 @@ import org.bukkit.persistence.PersistentDataType;
 
 import com.levthedev.mc.GoblinsPlunder;
 import com.levthedev.mc.managers.DatabaseManager;
-import com.levthedev.mc.utility.LootTablesOverworld;
 import com.levthedev.mc.utility.Serializer;
 
 
@@ -22,26 +21,24 @@ public class DatabaseCoordinator {
     private final GoblinsPlunder plugin = GoblinsPlunder.getInstance();
     private final DatabaseManager databaseManager = DatabaseManager.getInstance();
 
-    public void createPlunderDataByBlock(Block block, Player player, LootTablesOverworld loot) {
-        String loot_table_key = ""; // default loot_table_key as an empty string
+    public void createPlunderDataByBlock(Block block, Player player, String loot_table_key) {
         String blockId = UUID.randomUUID().toString();
         String location = "(" + block.getWorld().getName() + ", X: " + block.getX() + ", Y: " + block.getY() + ", Z: " + block.getZ() + ")";
         String blockType = block.getBlockData().getMaterial().toString();
         
-        if (loot != null){
-            loot_table_key = loot.getKey();
-        }
-        
+        // We expect the block to have been validated as a Container by this point
         Container container = (Container) block.getState();
 
         byte[] contents = null;
 
-        try {
-            contents = Serializer.toBase64(container.getInventory().getContents());
-        } catch (IOException e) {
-            System.err.println("[GP ERROR] " + e.getCause() +  " - " + e.getMessage());
+        if (!container.getInventory().isEmpty()){
+            try {
+                contents = Serializer.toBase64(container.getInventory().getContents());
+            } catch (IOException e) {
+                System.err.println("[GP ERROR] " + e.getCause() +  " - " + e.getMessage());
+            }
         }
-        
+
         //Add our custom key to the block data
         NamespacedKey key = new NamespacedKey(plugin, "blockId");
         container.getPersistentDataContainer().set(key, PersistentDataType.STRING, blockId);
@@ -51,15 +48,10 @@ public class DatabaseCoordinator {
         
     }
 
-    public void createPlunderDataByEntity(Entity entity, Player player, LootTablesOverworld loot) {
-        String loot_table_key = ""; // default loot_table_key as an empty string
+    public void createPlunderDataByEntity(Entity entity, Player player, String loot_table_key) {
         String blockId = UUID.randomUUID().toString();
         String location = "(" + entity.getWorld().getName() + ", X: " + entity.getLocation().getX() + ", Y: " + entity.getLocation().getY() + ", Z: " + entity.getLocation().getZ() + ")";
         String blockType = entity.getType().toString();
-        
-        if (loot != null){
-            loot_table_key = loot.getKey();
-        }
         
         StorageMinecart cart = (StorageMinecart) entity;
 
