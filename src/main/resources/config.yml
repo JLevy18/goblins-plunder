@@ -1,8 +1,14 @@
 datasource:
+
+  # Connection info
   host: "127.0.0.1"
   port: 3306
   username: "root"
   password: ""
+
+  # If this is left empty, plugin will create a database
+  databaseName: ""
+
   # The plugin uses HikariCP to pool connections.
   # poolSize = How many open connections the plugin will manage
   # This value must be greater than 0. A value of 1 is technically a standard database and not optimal
@@ -18,6 +24,7 @@ debug:
 plunder:
   generated-structures:
     enabled: true
+    # Which worlds will convert the generate-structure loot into plunder
     world-whitelist:
       - "world"
     structure-blacklist:

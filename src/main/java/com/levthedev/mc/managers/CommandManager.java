@@ -2,6 +2,7 @@ package com.levthedev.mc.managers;
 
 import java.util.ArrayList;
 
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -32,27 +33,30 @@ public class CommandManager implements CommandExecutor {
         if (sender instanceof Player) {
             Player player = (Player) sender;
 
-            // Base command passed
-            if (args.length == 0) {
-                HelpCommand help = new HelpCommand();
-                help.execute(player, args);
-                return true;
-            }
-            
+            if (player.hasPermission("goblinsplunder.admin")){
+                // Base command passed
+                if (args.length == 0) {
+                    HelpCommand help = new HelpCommand();
+                    help.execute(player, args);
+                    return true;
+                }
+                
 
-            // Sub command passed
-            if (args.length > 0) {
+                // Sub command passed
+                if (args.length > 0) {
 
-                for (SubCommand subcommand : commands){
-                    if (args[0].equalsIgnoreCase(subcommand.getName())){
-                        subcommand.execute(player, args);
-                        return true;
+                    for (SubCommand subcommand : commands){
+                        if (args[0].equalsIgnoreCase(subcommand.getName())){
+                            subcommand.execute(player, args);
+                            return true;
+                        }
                     }
+
                 }
 
+            } else {
+                player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.RED + "You do not have permission to use that.");
             }
-
-
 
         }
 

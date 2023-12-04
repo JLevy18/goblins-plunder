@@ -43,14 +43,27 @@ public class DatabaseManager {
 
     private DatabaseManager() {
 
-        // Setup datasource 
+        // Setup datasource
         try {
-            setupDataSource(plugin.getConfig());
-        } catch (Exception e) {
 
+            if (plugin.getConfig().getString("datasource.databaseName").isEmpty()){
+                setupDataSource(plugin.getConfig());
+            } else {
+                setupDataSourceCustom(plugin.getConfig());
+                createTables();
+            }
+
+
+        } catch (Exception e) {
 
             // If database not found, create it
             if (DatabaseNotFoundException(e)){
+
+                // Failed to find specified database - throw error
+                if (plugin.getConfig().getString("datasource.databaseName").isEmpty()){
+                    throw new RuntimeException("Database connection failed", e);
+                }
+
                 createDatabase(plugin.getConfig());
                 try {
                     setupDataSource(plugin.getConfig());
@@ -74,6 +87,15 @@ public class DatabaseManager {
     private void setupDataSource(FileConfiguration pluginConfig) throws Exception{
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl("jdbc:mysql://" + pluginConfig.getString("datasource.host") + ":" + pluginConfig.getInt("datasource.port") + "/goblins_plunder");
+        config.setUsername(pluginConfig.getString("datasource.username"));
+        config.setPassword(pluginConfig.getString("datasource.password"));
+
+        this.dataSource = new HikariDataSource(config);
+    }
+
+    private void setupDataSourceCustom(FileConfiguration pluginConfig) throws Exception{
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl("jdbc:mysql://" + pluginConfig.getString("datasource.host") + ":" + pluginConfig.getInt("datasource.port") + "/"+ pluginConfig.getString("datasource.databaseName"));
         config.setUsername(pluginConfig.getString("datasource.username"));
         config.setPassword(pluginConfig.getString("datasource.password"));
 
