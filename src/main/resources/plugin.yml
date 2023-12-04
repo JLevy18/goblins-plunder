@@ -1,5 +1,5 @@
 name: GoblinsPlunder
-version: 1.1.0
+version: 1.1.1
 main: com.levthedev.mc.GoblinsPlunder
 description: A simple Spigot plugin example
 
@@ -11,5 +11,5 @@ commands:
     aliases: [goblinsplunder, plunder]
 permissions:
   goblinsplunder.admin:
-    decription: Allows full use of the plugin
+    description: Required to use the gp commands, also bypasses invincibility
     default: op

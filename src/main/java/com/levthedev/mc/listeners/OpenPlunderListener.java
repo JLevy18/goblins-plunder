@@ -132,6 +132,14 @@ public class OpenPlunderListener implements Listener {
         DatabaseManager.getInstance().getPlunderDataByIdAsync(blockId, response -> {
 
             Bukkit.getScheduler().runTask(GoblinsPlunder.getInstance(), () -> {
+
+
+                if (response == null){
+                    player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.RED + "Loot database error. Please report this to an admin immediately.");
+                    System.err.println(ChatColor.DARK_RED + "[GP]" + ChatColor.RED + "");
+                    return;
+                }
+
                 if (response.getLootTableKey() != null && !response.getLootTableKey().equalsIgnoreCase("")) {
                     //Play sound
                     if (sound != null && location != null){
@@ -181,10 +189,6 @@ public class OpenPlunderListener implements Listener {
                     player.openInventory(playerChest);
 
                     
-                } else if ( response != null && response.getId() == null){
-                    player.sendMessage(response.getResponseMessage());
-                } else {
-                    System.err.println("[GP Error] Database Error");
                 }
             });
         });

@@ -8,20 +8,16 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.Container;
 import org.bukkit.block.Hopper;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.minecart.HopperMinecart;
 import org.bukkit.entity.minecart.StorageMinecart;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.vehicle.VehicleDestroyEvent;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.util.RayTraceResult;
-import org.bukkit.util.Vector;
 
 import com.levthedev.mc.GoblinsPlunder;
 import com.levthedev.mc.managers.ConfigManager;
@@ -35,7 +31,7 @@ public class RemovePlunderListener implements Listener {
 
         Block brokenBlock = event.getBlock();
 
-        if (ConfigManager.getInstance().isPlunderInvincible()) {
+        if (ConfigManager.getInstance().isPlunderInvincible() && !event.getPlayer().hasPermission("goblinsplunder.admin")) {
 
             if (brokenBlock.getState() instanceof Container) {
 
@@ -66,11 +62,12 @@ public class RemovePlunderListener implements Listener {
         if (!(event.getVehicle() instanceof StorageMinecart)) return;
         if (!(event.getAttacker() instanceof Player)) return;
 
+        Player player = (Player) event.getAttacker();
         StorageMinecart cart = (StorageMinecart) event.getVehicle();
 
         if (!(cart.getPersistentDataContainer().getKeys().toString().contains("goblinsplunder"))) return;
 
-        if (ConfigManager.getInstance().isPlunderInvincible()) {
+        if (ConfigManager.getInstance().isPlunderInvincible() && !player.hasPermission("goblinsplunder.admin")) {
             event.setCancelled(true);
         }else{
             cart.getInventory().clear();
