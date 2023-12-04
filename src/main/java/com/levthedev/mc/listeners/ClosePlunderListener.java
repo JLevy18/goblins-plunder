@@ -41,7 +41,7 @@ public class ClosePlunderListener implements Listener {
 
             // Save the interaction asynchronously to the database
 
-            DatabaseManager.getInstance().createPlunderStateAsync(playerUuid, pbId, plunderManager.getPlunder(player.getUniqueId()).getWorldName(), state);
+            DatabaseManager.getInstance().createPlunderStateAsync(playerUuid, pbId, plunderManager.getPlunder(player.getUniqueId()).getWorldName(), plunderManager.getPlunder(player.getUniqueId()).getIgnoreRestock() ,state);
             plunderManager.removeOpenPlunder(player.getUniqueId());
         }
     }

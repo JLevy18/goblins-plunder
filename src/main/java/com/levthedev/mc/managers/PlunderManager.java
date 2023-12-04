@@ -4,8 +4,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.bukkit.block.Container;
-import org.bukkit.inventory.ItemStack;
 
 import com.levthedev.mc.dao.Plunder;
 

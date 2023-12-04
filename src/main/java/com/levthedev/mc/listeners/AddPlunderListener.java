@@ -36,11 +36,11 @@ import net.md_5.bungee.api.ChatColor;
 public class AddPlunderListener implements Listener {
 
     // This is a set of the players that are concurrently running the command
-    private Set<Player> activePlayers = new HashSet<>();
+    private Map<Player, Boolean> activePlayers = new HashMap<>();
 
-    public void setActive(Player player, boolean active) {
+    public void setActive(Player player, boolean active, Boolean ignore_restock) {
         if (active) {
-            activePlayers.add(player);
+            activePlayers.put(player, ignore_restock);
         } else {
             activePlayers.remove(player);
         }
@@ -84,7 +84,7 @@ public class AddPlunderListener implements Listener {
     public void onAddPlunder(PlayerInteractEvent event) {
         Player player = event.getPlayer();
 
-        if (!activePlayers.contains(player)) return;
+        if (activePlayers.get(player) == null) return;
 
         event.setCancelled(true);
 
@@ -113,7 +113,7 @@ public class AddPlunderListener implements Listener {
                             loot_table_key = chest.getLootTable().getKey().toString();
                         } else if (chest.getInventory().isEmpty()){ // No loottable, check chest contents
                             player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.RED + "Failed to add chest to db: LootTable invalid or Container is empty.");
-                            setActive(player, false);
+                            setActive(player, false, null);
                             return;
                         }
 
@@ -125,12 +125,12 @@ public class AddPlunderListener implements Listener {
                             loot_table_key = barrel.getLootTable().getKey().toString();
                         } else if (barrel.getInventory().isEmpty()){ // No loottable, check chest contents
                             player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.RED + "Failed to add chest to db: LootTable invalid or Container is empty.");
-                            setActive(player, false);
+                            setActive(player, false, null);
                             return;
                         }
                     } 
 
-                    DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderDataByBlock(clickedBlock, event.getPlayer(), loot_table_key);
+                    DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderDataByBlock(clickedBlock, event.getPlayer(), activePlayers.get(player), loot_table_key);
         
                     
                 } else {
@@ -141,7 +141,7 @@ public class AddPlunderListener implements Listener {
 
         }
 
-        setActive(player, false);
+        setActive(player, false, null);
     }
 
 
@@ -165,7 +165,7 @@ public class AddPlunderListener implements Listener {
                     Bukkit.getScheduler().runTask(GoblinsPlunder.getInstance(), () -> {            
                         Chest chest = (Chest) blockState;
                         if (chest.getLootTable() != null){
-                            DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderDataByBlock(chest.getBlock(), null, chest.getLootTable().toString());
+                            DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderDataByBlock(chest.getBlock(), null, false, chest.getLootTable().toString());
 
                         }
                         
@@ -180,7 +180,7 @@ public class AddPlunderListener implements Listener {
                     Bukkit.getScheduler().runTask(GoblinsPlunder.getInstance(), () -> {
                         StorageMinecart cart = (StorageMinecart) entity;
                         if (cart.getLootTable() != null){
-                            DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderDataByEntity(entity, null, cart.getLootTable().toString());
+                            DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderDataByEntity(entity, null, false, cart.getLootTable().toString());
                         }
 
                     });

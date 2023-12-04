@@ -21,7 +21,7 @@ public class DatabaseCoordinator {
     private final GoblinsPlunder plugin = GoblinsPlunder.getInstance();
     private final DatabaseManager databaseManager = DatabaseManager.getInstance();
 
-    public void createPlunderDataByBlock(Block block, Player player, String loot_table_key) {
+    public void createPlunderDataByBlock(Block block, Player player, boolean ignore_restock, String loot_table_key) {
         String blockId = UUID.randomUUID().toString();
         String location = "(X: " + block.getX() + ", Y: " + block.getY() + ", Z: " + block.getZ() + ")";
         String blockType = block.getBlockData().getMaterial().toString();
@@ -45,11 +45,11 @@ public class DatabaseCoordinator {
         container.getPersistentDataContainer().set(key, PersistentDataType.STRING, blockId);
         container.update();
 
-        databaseManager.createPlunderDataAsync(blockId, worldName, location, blockType, loot_table_key, contents, player);
+        databaseManager.createPlunderDataAsync(blockId, worldName, ignore_restock, location, blockType, loot_table_key, contents, player);
         
     }
 
-    public void createPlunderDataByEntity(Entity entity, Player player, String loot_table_key) {
+    public void createPlunderDataByEntity(Entity entity, Player player, boolean ignore_restock, String loot_table_key) {
         String blockId = UUID.randomUUID().toString();
         String location = "(X: " + entity.getLocation().getX() + ", Y: " + entity.getLocation().getY() + ", Z: " + entity.getLocation().getZ() + ")";
         String blockType = entity.getType().toString();
@@ -69,7 +69,7 @@ public class DatabaseCoordinator {
         NamespacedKey key = new NamespacedKey(plugin, "blockId");
         cart.getPersistentDataContainer().set(key, PersistentDataType.STRING, blockId);
 
-        databaseManager.createPlunderDataAsync(blockId, worldName, location, blockType, loot_table_key, contents, player);
+        databaseManager.createPlunderDataAsync(blockId, worldName, ignore_restock, location, blockType, loot_table_key, contents, player);
         
     }
 

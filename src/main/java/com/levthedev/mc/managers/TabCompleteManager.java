@@ -13,7 +13,8 @@ import net.md_5.bungee.api.ChatColor;
 public class TabCompleteManager implements TabCompleter {
 
     private final List<String> commands = new ArrayList<>();
-    private final List<String> refillOptions = new ArrayList<>();
+    private final List<String> restockOptions = new ArrayList<>();
+    private final List<String> addOptions = new ArrayList<>();
     private final List<String> removeOptions = new ArrayList<>();
 
 
@@ -25,10 +26,14 @@ public class TabCompleteManager implements TabCompleter {
         commands.add("restock");
         commands.add("remove");
 
-        removeOptions.add(ChatColor.ITALIC + "<World>");
 
-        refillOptions.add(ChatColor.ITALIC + "<World>");
-        refillOptions.add("all");
+
+        addOptions.add("-ignoreRestock");
+
+        restockOptions.add(ChatColor.ITALIC + "<World>");
+        restockOptions.add("all");
+        
+        removeOptions.add(ChatColor.ITALIC + "<World>");
 
     }
 
@@ -42,8 +47,13 @@ public class TabCompleteManager implements TabCompleter {
             StringUtil.copyPartialMatches(args[0], commands, completions);
         }
 
+        if (args.length == 2 && args[0].equalsIgnoreCase("add")) {
+            StringUtil.copyPartialMatches(args[1], addOptions, completions);
+        }
+
+
         if (args.length == 2 && args[0].equalsIgnoreCase("restock")) {
-            StringUtil.copyPartialMatches(args[1], refillOptions, completions);
+            StringUtil.copyPartialMatches(args[1], restockOptions, completions);
         }
 
         if (args.length == 2 && args[0].equalsIgnoreCase("remove")) {

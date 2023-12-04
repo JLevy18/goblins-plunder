@@ -33,7 +33,8 @@ public class HelpCommand extends SubCommand {
        ChatColor.GOLD + "" + ChatColor.BOLD + "===========[" + ChatColor.DARK_GREEN + " Goblins Plunder" + ChatColor.YELLOW + "" + ChatColor.BOLD + " Help" + ChatColor.GOLD + "" + ChatColor.BOLD + "]============\n" + ChatColor.RESET + "" +
        ChatColor.DARK_GREEN + "/gp help " + ChatColor.GREEN + ": Display a list of all commands.\n" +
        ChatColor.DARK_GREEN +"/gp reload " + ChatColor.GREEN + ": Reload the config file.\n" +
-       ChatColor.DARK_GREEN +"/gp add" + ChatColor.GREEN + ": Add a plunder container to the database.\n" +
+       ChatColor.DARK_GREEN +"/gp add [flags]" + ChatColor.GREEN + ": Add a plunder container to the database.\n" +
+                             "  -ignoreRestock : " + ChatColor.GRAY + "This chest will no longer be restocked.\n" +
        ChatColor.DARK_GREEN +"/gp restock <World> " + ChatColor.GREEN + ": Restock the plunders in a world.\n" +
        ChatColor.DARK_GREEN +"/gp remove <World> " + ChatColor.GREEN + ": Remove the plunders in a world.\n" +
         

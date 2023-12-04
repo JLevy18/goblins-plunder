@@ -18,4 +18,6 @@ public class PlunderState {
     private final String blockId;
     @NonNull
     private final byte[] stateData;
+    @NonNull
+    private final Boolean ignoreRestock;
 }

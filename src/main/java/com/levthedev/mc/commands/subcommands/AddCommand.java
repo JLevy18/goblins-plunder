@@ -24,7 +24,7 @@ public class AddCommand extends SubCommand{
 
     @Override
     public String getUsage() {
-        return "/gp add";
+        return "/gp add [flags]";
     }
 
     @Override
@@ -33,9 +33,12 @@ public class AddCommand extends SubCommand{
         AddPlunderListener addPlunderListener = (AddPlunderListener) ListenerManager.getInstance().getListeners().get("add");
 
         if (args.length == 1) {
-            addPlunderListener.setActive(player, true);
+            addPlunderListener.setActive(player, true, false);
             player.sendMessage(ConfigManager.getInstance().getPrefix() + ChatColor.GREEN + "Click a container to convert to plunder");
-        } else if (args.length > 1){
+        } else if (args.length > 1 && args[1].equalsIgnoreCase("-ignorerestock")){
+            addPlunderListener.setActive(player, true, true);
+            player.sendMessage(ConfigManager.getInstance().getPrefix() + ChatColor.GREEN + "Click a container to convert to plunder");
+        } else {
             player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.RED + "Invalid arguments.");
         }
 

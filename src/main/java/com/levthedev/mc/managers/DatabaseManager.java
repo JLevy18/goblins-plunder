@@ -19,7 +19,7 @@ import org.bukkit.util.Consumer;
 
 import com.levthedev.mc.GoblinsPlunder;
 import com.levthedev.mc.coordinators.DatabaseCoordinator;
-import com.levthedev.mc.dao.PlunderDAO;
+import com.levthedev.mc.dao.Plunder;
 import com.levthedev.mc.dao.PlunderState;
 import com.levthedev.mc.utility.PlunderCallback;
 import com.zaxxer.hikari.HikariConfig;
@@ -163,7 +163,8 @@ public class DatabaseManager {
             String query = "CREATE TABLE plunder_blocks (" +
                            "id VARCHAR(36) PRIMARY KEY," +
                            "location VARCHAR(255) NOT NULL UNIQUE," +
-                           "worldName VARCHAR(255) NOT NULL," +
+                           "world_name VARCHAR(255) NOT NULL," +
+                           "ignore_restock BOOLEAN NOT NULL DEFAULT FALSE," +
                            "block_type VARCHAR(255) NOT NULL," +
                            "loot_table_key VARCHAR(255), " +
                            "contents BLOB);";
@@ -176,7 +177,8 @@ public class DatabaseManager {
             String query = "CREATE TABLE plunder_state (" +
                            "player_uuid VARCHAR(36) NOT NULL," +
                            "pb_id VARCHAR(36) NOT NULL," +
-                           "worldName VARCHAR(255) NOT NULL," +
+                           "world_name VARCHAR(255) NOT NULL," +
+                           "ignore_restock BOOLEAN NOT NULL DEFAULT FALSE," +
                            "state BLOB NOT NULL," +
                            "PRIMARY KEY (player_uuid, pb_id)," +
                            "FOREIGN KEY (pb_id) REFERENCES plunder_blocks(id) ON DELETE CASCADE);";
@@ -186,7 +188,7 @@ public class DatabaseManager {
 
     public void resetPlunderStateTableAsync() {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            String sql = "DELETE FROM plunder_state";
+            String sql = "DELETE FROM plunder_state WHERE ignore_restock = FALSE;";
     
             try (Connection conn = dataSource.getConnection();
                  Statement stmt = conn.createStatement()) {
@@ -207,19 +209,20 @@ public class DatabaseManager {
     // ##########################
 
 
-    public void createPlunderDataAsync(String blockId, String worldName, String location, String blockType, String loot_table_key, byte[] contents, Player player) {
+    public void createPlunderDataAsync(String blockId, String worldName, boolean ignore_restock, String location, String blockType, String loot_table_key, byte[] contents, Player player) {
 
 
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            String sql = "INSERT INTO plunder_blocks (id, worldName, location, block_type, loot_table_key, contents) VALUES (?, ?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO plunder_blocks (id, world_name, ignore_restock, location, block_type, loot_table_key, contents) VALUES (?, ?, ?, ?, ?, ?, ?)";
             try (Connection conn = dataSource.getConnection();
                  PreparedStatement stmt = conn.prepareStatement(sql)) {
                 stmt.setString(1, blockId);
                 stmt.setString(2, worldName);
-                stmt.setString(3, location);
-                stmt.setString(4, blockType);
-                stmt.setString(5, loot_table_key);
-                stmt.setBytes(6, contents);
+                stmt.setBoolean(3, ignore_restock);
+                stmt.setString(4, location);
+                stmt.setString(5, blockType);
+                stmt.setString(6, loot_table_key);
+                stmt.setBytes(7, contents);
                 stmt.executeUpdate();
                 
                 if (player != null) {
@@ -243,10 +246,10 @@ public class DatabaseManager {
 
     }
 
-    public void createPlunderStateAsync(String playerUuid, String pbId, String worldName, byte[] state){
+    public void createPlunderStateAsync(String playerUuid, String pbId, String worldName, Boolean ignore_restock, byte[] state){
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             // Database operation
-            String sql = "INSERT INTO plunder_state (player_uuid, pb_id, worldName, state) VALUES (?, ?, ?, ?) " +
+            String sql = "INSERT INTO plunder_state (player_uuid, pb_id, world_name, ignore_restock, state) VALUES (?, ?, ?, ?, ?) " +
                          "ON DUPLICATE KEY UPDATE state = ?;"; // Adjust SQL as needed
     
             try (Connection conn = dataSource.getConnection();
@@ -254,11 +257,12 @@ public class DatabaseManager {
                 stmt.setString(1, playerUuid);
                 stmt.setString(2, pbId);
                 stmt.setString(3, worldName);
-                stmt.setBytes(4, state);
-                stmt.setBytes(5, state); // For the ON DUPLICATE KEY clause
+                stmt.setBoolean(4, ignore_restock);
+                stmt.setBytes(5, state);
+                stmt.setBytes(6, state); // For the ON DUPLICATE KEY clause
                 stmt.executeUpdate();
             } catch (SQLException e) {
-                System.err.println("Failed to save interaction to the database");
+                System.err.println("Failed to save interaction to the database: \n" + e);
             }
         });
     }
@@ -267,7 +271,7 @@ public class DatabaseManager {
 
 
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            PlunderDAO plunder = null;
+            Plunder plunder = null;
             String sql = "SELECT * FROM plunder_blocks WHERE id = ?";
 
             try (Connection conn = dataSource.getConnection();
@@ -277,19 +281,19 @@ public class DatabaseManager {
                 ResultSet rs = stmt.executeQuery();
         
                 if (rs.next()) {
-                    plunder = new PlunderDAO(rs.getString("id"), rs.getString("location"), rs.getString("block_type"), rs.getString("loot_table_key"), rs.getBytes("contents"), "");
+                    plunder = new Plunder(rs.getString("id"), rs.getString("location"), rs.getString("block_type"), rs.getString("loot_table_key"), rs.getString("world_name"), rs.getBoolean("ignore_restock"), rs.getBytes("contents"), "Success");
                 }
 
             } catch (SQLException e) {
                 String error = ChatColor.DARK_RED + "" + ChatColor.BOLD + "[Database Error]: " + e.getMessage();
-                plunder = new PlunderDAO(null,null,null,null,null, error);
+                plunder = new Plunder(null,null,null,null,null, null, null, error);
             }
 
 
 
             // Callback to the main thread
 
-            final PlunderDAO response = plunder;
+            final Plunder response = plunder;
             Bukkit.getScheduler().runTask(GoblinsPlunder.getInstance(), () -> callback.onQueryFinish(response));
 
         });
@@ -309,9 +313,8 @@ public class DatabaseManager {
                 ResultSet rs = stmt.executeQuery();
     
                 if (rs.next()) {
-                    byte[] stateData = rs.getBytes("state");
-                    // Assuming PlunderState is a class you've created to hold this data
-                    plunderState = new PlunderState(playerUuid, blockId, stateData);
+                    
+                    plunderState = new PlunderState(playerUuid, blockId, rs.getBytes("state"), rs.getBoolean("ignore_restock"));
                 }
     
             } catch (SQLException e) {
@@ -352,7 +355,7 @@ public class DatabaseManager {
 
     public void deletePlunderBlocksByWorldAsync(String worldName, Player player){
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            String sql = "DELETE FROM plunder_blocks WHERE worldName = ?";
+            String sql = "DELETE FROM plunder_blocks WHERE world_name = ?";
     
             try (Connection conn = dataSource.getConnection();
                  PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -376,7 +379,7 @@ public class DatabaseManager {
 
     public void deletePlunderStateByWorldAsync(String worldName) {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            String sql = "DELETE FROM plunder_state WHERE worldName = ?";
+            String sql = "DELETE FROM plunder_state WHERE world_name = ? AND ignore_restock = FALSE;";
     
             try (Connection conn = dataSource.getConnection();
                  PreparedStatement stmt = conn.prepareStatement(sql)) {

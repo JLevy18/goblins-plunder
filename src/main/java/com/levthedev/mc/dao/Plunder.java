@@ -12,11 +12,17 @@ import lombok.Setter;
 @AllArgsConstructor
 public class Plunder {
 
+    @NonNull
     private String id;
+    @NonNull
     private String location;
+    @NonNull
     private String blockType;
     private String lootTableKey;
+    @NonNull
     private String worldName;
+    private Boolean ignoreRestock;
     private byte[] contents;
 
+    private String responseMessage;
 }
