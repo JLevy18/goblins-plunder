@@ -68,10 +68,10 @@ public class OpenPlunderListener implements Listener {
                             // No existing interaction, fill with loot table items
 
                             if (container instanceof Chest){
-            
+                                PlunderManager.getInstance().getOpenPlunderMap().get(player.getUniqueId()).setSound(Sound.BLOCK_CHEST_CLOSE);
                                 fillInventoryWithLoot(Sound.BLOCK_CHEST_OPEN,container.getLocation(), blockId, player);
                             } else if (container instanceof Barrel){
-
+                                PlunderManager.getInstance().getOpenPlunderMap().get(player.getUniqueId()).setSound(Sound.BLOCK_BARREL_CLOSE);
                                 fillInventoryWithLoot(Sound.BLOCK_BARREL_OPEN,container.getLocation(), blockId, player);
                             }
 
@@ -156,8 +156,6 @@ public class OpenPlunderListener implements Listener {
                 if (response.getLootTableKey() != null && !response.getLootTableKey().equalsIgnoreCase("")) {
 
                     PlunderManager.getInstance().getOpenPlunderMap().get(player.getUniqueId()).setIgnoreRestock(response.getIgnoreRestock());
-
-                    PlunderManager.getInstance().getOpenPlunderMap().get(player.getUniqueId()).setSound(sound);
 
                     //Play sound
                     if (sound != null && location != null){
