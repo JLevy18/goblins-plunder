@@ -1,6 +1,5 @@
 package com.levthedev.mc.managers;
 
-import java.io.ObjectInputFilter.Config;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -13,6 +12,7 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Consumer;
@@ -353,23 +353,22 @@ public class DatabaseManager {
         });
     }
 
-    public void deletePlunderBlocksByWorldAsync(String worldName, Player player){
+    public void deletePlunderBlocksByWorldAsync(String worldName, CommandSender sender){
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             String sql = "DELETE FROM plunder_blocks WHERE world_name = ?";
-    
             try (Connection conn = dataSource.getConnection();
                  PreparedStatement stmt = conn.prepareStatement(sql)) {
                 
                 stmt.setString(1, worldName);
                 stmt.executeUpdate();
 
-                player.sendMessage(ConfigManager.getInstance().getPrefix() + ChatColor.GREEN + "Deleted all entries in " + worldName);
+                sender.sendMessage(ConfigManager.getInstance().getPrefix() + ChatColor.GREEN + "Deleted all entries in " + worldName);
 
                 System.out.println("plunder_block entries for world " + worldName + " have been deleted.");
     
             } catch (SQLException e) {
 
-                player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.RED + "Failed deleting entries in " + worldName);
+                sender.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.RED + "Failed deleting entries in " + worldName);
 
                 e.printStackTrace();
                 System.err.println("Error deleting plunder_block entries for world " + worldName + ": " + e.getMessage());

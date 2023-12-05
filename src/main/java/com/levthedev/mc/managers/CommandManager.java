@@ -6,6 +6,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 
 import com.levthedev.mc.commands.SubCommand;
@@ -60,6 +61,25 @@ public class CommandManager implements CommandExecutor {
                 player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.RED + "You do not have permission to use that.");
             }
 
+        } else if (sender instanceof ConsoleCommandSender) {
+            if (args.length == 0) {
+                HelpCommand help = new HelpCommand();
+                help.execute(sender, args);
+                return true;
+            }
+            
+
+            // Sub command passed
+            if (args.length > 0) {
+
+                for (SubCommand subcommand : commands){
+                    if (args[0].equalsIgnoreCase(subcommand.getName())){
+                        subcommand.execute(sender, args);
+                        return true;
+                    }
+                }
+
+            }
         }
 
         return true;

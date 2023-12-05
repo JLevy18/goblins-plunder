@@ -1,6 +1,7 @@
 package com.levthedev.mc.commands.subcommands;
 
 
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.levthedev.mc.commands.SubCommand;
@@ -28,7 +29,14 @@ public class AddCommand extends SubCommand{
     }
 
     @Override
-    public void execute(Player player, String[] args) {
+    public void execute(CommandSender sender, String[] args) {
+
+        if (!(sender instanceof Player)){
+
+            sender.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.RED + "The console cannot use this command!");
+            return;
+        }
+        Player player = (Player) sender;
 
         AddPlunderListener addPlunderListener = (AddPlunderListener) ListenerManager.getInstance().getListeners().get("add");
 

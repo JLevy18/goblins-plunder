@@ -1,8 +1,7 @@
 package com.levthedev.mc.commands.subcommands;
 
-import org.bukkit.entity.Player;
+import org.bukkit.command.CommandSender;
 
-import com.levthedev.mc.GoblinsPlunder;
 import com.levthedev.mc.commands.SubCommand;
 import com.levthedev.mc.managers.ConfigManager;
 
@@ -26,9 +25,9 @@ public class ReloadCommand extends SubCommand{
     }
 
     @Override
-    public void execute(Player player, String[] args) {
+    public void execute(CommandSender sender, String[] args) {
         ConfigManager.getInstance().reloadConfig();
-        player.sendMessage(ChatColor.GREEN + "[GP] Config reloaded!");
+        sender.sendMessage(ChatColor.GREEN + "[GP] Config reloaded!");
     }
     
 }

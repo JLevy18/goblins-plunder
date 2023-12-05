@@ -3,6 +3,7 @@ package com.levthedev.mc.commands.subcommands;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.levthedev.mc.commands.SubCommand;
@@ -27,7 +28,7 @@ public class RestockCommand extends SubCommand{
     }
 
     @Override
-    public void execute(Player player, String[] args) {
+    public void execute(CommandSender sender, String[] args) {
 
         // Reset entire table
 
@@ -44,7 +45,7 @@ public class RestockCommand extends SubCommand{
 
             World world = Bukkit.getWorld(args[1]);
             if (world == null) {
-                player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + args[1] + ChatColor.RED + " is not a valid world name.");
+                sender.sendMessage(ConfigManager.getInstance().getErrorPrefix() + args[1] + ChatColor.RED + " is not a valid world name.");
             } else {
                 DatabaseManager.getInstance().deletePlunderStateByWorldAsync(args[1]);
                 if (ConfigManager.getInstance().isBroadcastRestockEnabled()){
@@ -54,7 +55,7 @@ public class RestockCommand extends SubCommand{
         }
 
         if (args.length != 2 ) {
-            player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.RED + "Please specify what to restock.");
+            sender.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.RED + "Please specify what to restock.");
         }
     }
 

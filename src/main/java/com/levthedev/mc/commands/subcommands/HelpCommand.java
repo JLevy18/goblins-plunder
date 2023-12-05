@@ -1,9 +1,6 @@
 package com.levthedev.mc.commands.subcommands;
 
-import java.util.Map;
-
-import org.bukkit.entity.Player;
-import org.bukkit.event.Listener;
+import org.bukkit.command.CommandSender;
 
 import com.levthedev.mc.commands.SubCommand;
 
@@ -27,8 +24,8 @@ public class HelpCommand extends SubCommand {
     }
 
     @Override
-    public void execute(Player player, String[] args) {
-        player.sendMessage(
+    public void execute( CommandSender sender, String[] args) {
+        sender.sendMessage(
             
        ChatColor.GOLD + "" + ChatColor.BOLD + "===========[" + ChatColor.DARK_GREEN + " Goblins Plunder" + ChatColor.YELLOW + "" + ChatColor.BOLD + " Help" + ChatColor.GOLD + "" + ChatColor.BOLD + "]============\n" + ChatColor.RESET + "" +
        ChatColor.DARK_GREEN + "/gp help " + ChatColor.GREEN + ": Display a list of all commands.\n" +
