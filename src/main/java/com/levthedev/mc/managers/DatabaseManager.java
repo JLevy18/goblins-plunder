@@ -262,7 +262,7 @@ public class DatabaseManager {
                 stmt.setBytes(6, state); // For the ON DUPLICATE KEY clause
                 stmt.executeUpdate();
             } catch (SQLException e) {
-                System.err.println("Failed to save interaction to the database: \n" + e);
+                System.err.println("Failed to save interaction to the database: block_id=" + pbId + "\n" + e);
             }
         });
     }
@@ -281,12 +281,12 @@ public class DatabaseManager {
                 ResultSet rs = stmt.executeQuery();
         
                 if (rs.next()) {
-                    plunder = new Plunder(rs.getString("id"), rs.getString("location"), rs.getString("block_type"), rs.getString("loot_table_key"), rs.getString("world_name"), rs.getBoolean("ignore_restock"), rs.getBytes("contents"), "Success");
+                    plunder = new Plunder(rs.getString("id"), rs.getString("location"), rs.getString("block_type"), rs.getString("loot_table_key"), rs.getString("world_name"), rs.getBoolean("ignore_restock"), rs.getBytes("contents"), null, "Success");
                 }
 
             } catch (SQLException e) {
                 String error = ChatColor.DARK_RED + "" + ChatColor.BOLD + "[Database Error]: " + e.getMessage();
-                plunder = new Plunder(null,null,null,null,null, null, null, error);
+                plunder = new Plunder(null,null,null,null,null, null, null, null, error);
             }
 
 

@@ -1,6 +1,6 @@
 package com.levthedev.mc.dao;
 
-import java.sql.Blob;
+import org.bukkit.Sound;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,5 +24,6 @@ public class Plunder {
     private Boolean ignoreRestock;
     private byte[] contents;
 
+    private Sound sound;
     private String responseMessage;
 }

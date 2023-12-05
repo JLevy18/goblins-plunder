@@ -57,7 +57,7 @@ public class OpenPlunderListener implements Listener {
                     String blockId = con.get(new NamespacedKey(GoblinsPlunder.getInstance(), "blockid"), PersistentDataType.STRING);
 
                     
-                    Plunder plunder = new Plunder(blockId, "", "", null, container.getWorld().getName(), null, null, null);
+                    Plunder plunder = new Plunder(blockId, "", "", null, container.getWorld().getName(),null, null, null, null);
 
 
                     PlunderManager.getInstance().addOpenPlunder(player.getUniqueId(), plunder);
@@ -84,6 +84,7 @@ public class OpenPlunderListener implements Listener {
                                     PlunderManager.getInstance().getOpenPlunderMap().get(player.getUniqueId()).setIgnoreRestock(stateResponse.getIgnoreRestock());
                                 }
 
+                                PlunderManager.getInstance().getOpenPlunderMap().get(player.getUniqueId()).setSound(Sound.BLOCK_CHEST_CLOSE);
                                 fillInventoryWithSavedState(Sound.BLOCK_CHEST_OPEN,container.getLocation(), stateResponse.getStateData(), player);
                             } else if (container instanceof Barrel){
 
@@ -91,6 +92,7 @@ public class OpenPlunderListener implements Listener {
                                     PlunderManager.getInstance().getOpenPlunderMap().get(player.getUniqueId()).setIgnoreRestock(stateResponse.getIgnoreRestock());
                                 }
 
+                                PlunderManager.getInstance().getOpenPlunderMap().get(player.getUniqueId()).setSound(Sound.BLOCK_BARREL_CLOSE);
                                 fillInventoryWithSavedState(Sound.BLOCK_BARREL_OPEN,container.getLocation(), stateResponse.getStateData(), player);
                             }
                         }
@@ -116,7 +118,7 @@ public class OpenPlunderListener implements Listener {
                 // DO NOT LET PLAYER OPEN THE CHEST
                 event.setCancelled(true);
                 String blockId = con.get(new NamespacedKey(GoblinsPlunder.getInstance(), "blockid"), PersistentDataType.STRING);
-                Plunder plunder = new Plunder(blockId, null, null, null, cart.getWorld().getName(), null, null, null);
+                Plunder plunder = new Plunder(blockId, null, null, null, cart.getWorld().getName(), null, null, null, null);
                 PlunderManager.getInstance().addOpenPlunder(player.getUniqueId(), plunder);
 
                 DatabaseManager.getInstance().getPlunderStateByIdAsync(player.getUniqueId(), blockId, stateResponse -> {
@@ -154,6 +156,8 @@ public class OpenPlunderListener implements Listener {
                 if (response.getLootTableKey() != null && !response.getLootTableKey().equalsIgnoreCase("")) {
 
                     PlunderManager.getInstance().getOpenPlunderMap().get(player.getUniqueId()).setIgnoreRestock(response.getIgnoreRestock());
+
+                    PlunderManager.getInstance().getOpenPlunderMap().get(player.getUniqueId()).setSound(sound);
 
                     //Play sound
                     if (sound != null && location != null){

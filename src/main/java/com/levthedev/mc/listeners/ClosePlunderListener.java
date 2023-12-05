@@ -25,12 +25,15 @@ public class ClosePlunderListener implements Listener {
 
         if (plunderManager.getOpenPlunderMap().containsKey(event.getPlayer().getUniqueId())) {
             // Retrieve necessary information
-
+            
 
             Player player = (Player) event.getPlayer();
             String playerUuid = player.getUniqueId().toString();
             String pbId = plunderManager.getPlunderId(event.getPlayer().getUniqueId());
             
+            
+            player.getWorld().playSound(player.getLocation(), plunderManager.getOpenPlunderMap().get(player.getUniqueId()).getSound(), 1.0f, 1.0f);
+
             // Serialize the state of the inventory
             byte[] state = null;
             try {
