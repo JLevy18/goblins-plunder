@@ -1,6 +1,8 @@
 package com.levthedev.mc.listeners;
 
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -36,6 +38,9 @@ import net.md_5.bungee.api.ChatColor;
 
 public class OpenPlunderListener implements Listener {
 
+
+    private Logger logger = GoblinsPlunder.getInstance().getLogger();
+
     @EventHandler
     @SuppressWarnings("deprecation")
     public void onPlunderOpen(PlayerInteractEvent event) {
@@ -56,11 +61,19 @@ public class OpenPlunderListener implements Listener {
                     event.setCancelled(true);
                     String blockId = con.get(new NamespacedKey(GoblinsPlunder.getInstance(), "blockid"), PersistentDataType.STRING);
 
+
+                    // Make sure plunder is not already open
+                    // Right now, if a player gets locked. They are locked from all plunders until an admin fixes them.
+                    if (PlunderManager.getInstance().getPlunder(player.getUniqueId()).getLocked()){
+
+                        player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.RED + "Database failure! Please contact an admin immediately.");
+                        logger.log(Level.SEVERE, this.getClass().getSimpleName() + ": Error occurred when saving interaction. \n {\r\n   Player: " + player.getName() + "(" + player.getUniqueId() + ")" + ", \r\n   blockId: " + blockId + ", \r\n   worldName: " + container.getWorld().getName() + "\r\n }");
+
+                        return;
+                    }
+
                     
-                    Plunder plunder = new Plunder(blockId, "", "", null, container.getWorld().getName(),null, null, null, null);
-
-
-                    PlunderManager.getInstance().addOpenPlunder(player.getUniqueId(), plunder);
+                    PlunderManager.getInstance().addOpenPlunder(player.getUniqueId(), new Plunder(blockId, "", "", null, container.getWorld().getName(),null, null, null, false));
 
 
                     DatabaseManager.getInstance().getPlunderStateByIdAsync(player.getUniqueId(), blockId, stateResponse -> {
@@ -68,10 +81,10 @@ public class OpenPlunderListener implements Listener {
                             // No existing interaction, fill with loot table items
 
                             if (container instanceof Chest){
-                                PlunderManager.getInstance().getOpenPlunderMap().get(player.getUniqueId()).setSound(Sound.BLOCK_CHEST_CLOSE);
+                                PlunderManager.getInstance().getPlunder(player.getUniqueId()).setSound(Sound.BLOCK_CHEST_CLOSE);
                                 fillInventoryWithLoot(Sound.BLOCK_CHEST_OPEN,container.getLocation(), blockId, player);
                             } else if (container instanceof Barrel){
-                                PlunderManager.getInstance().getOpenPlunderMap().get(player.getUniqueId()).setSound(Sound.BLOCK_BARREL_CLOSE);
+                                PlunderManager.getInstance().getPlunder(player.getUniqueId()).setSound(Sound.BLOCK_BARREL_CLOSE);
                                 fillInventoryWithLoot(Sound.BLOCK_BARREL_OPEN,container.getLocation(), blockId, player);
                             }
 
@@ -81,18 +94,18 @@ public class OpenPlunderListener implements Listener {
                             if (container instanceof Chest){
                                 
                                 if (stateResponse.getIgnoreRestock() != null) {
-                                    PlunderManager.getInstance().getOpenPlunderMap().get(player.getUniqueId()).setIgnoreRestock(stateResponse.getIgnoreRestock());
+                                    PlunderManager.getInstance().getPlunder(player.getUniqueId()).setIgnoreRestock(stateResponse.getIgnoreRestock());
                                 }
 
-                                PlunderManager.getInstance().getOpenPlunderMap().get(player.getUniqueId()).setSound(Sound.BLOCK_CHEST_CLOSE);
+                                PlunderManager.getInstance().getPlunder(player.getUniqueId()).setSound(Sound.BLOCK_CHEST_CLOSE);
                                 fillInventoryWithSavedState(Sound.BLOCK_CHEST_OPEN,container.getLocation(), stateResponse.getStateData(), player);
                             } else if (container instanceof Barrel){
 
                                 if (stateResponse.getIgnoreRestock() != null) {
-                                    PlunderManager.getInstance().getOpenPlunderMap().get(player.getUniqueId()).setIgnoreRestock(stateResponse.getIgnoreRestock());
+                                    PlunderManager.getInstance().getPlunder(player.getUniqueId()).setIgnoreRestock(stateResponse.getIgnoreRestock());
                                 }
 
-                                PlunderManager.getInstance().getOpenPlunderMap().get(player.getUniqueId()).setSound(Sound.BLOCK_BARREL_CLOSE);
+                                PlunderManager.getInstance().getPlunder(player.getUniqueId()).setSound(Sound.BLOCK_BARREL_CLOSE);
                                 fillInventoryWithSavedState(Sound.BLOCK_BARREL_OPEN,container.getLocation(), stateResponse.getStateData(), player);
                             }
                         }
@@ -118,7 +131,7 @@ public class OpenPlunderListener implements Listener {
                 // DO NOT LET PLAYER OPEN THE CHEST
                 event.setCancelled(true);
                 String blockId = con.get(new NamespacedKey(GoblinsPlunder.getInstance(), "blockid"), PersistentDataType.STRING);
-                Plunder plunder = new Plunder(blockId, null, null, null, cart.getWorld().getName(), null, null, null, null);
+                Plunder plunder = new Plunder(blockId, null, null, null, cart.getWorld().getName(), null, null, null, false);
                 PlunderManager.getInstance().addOpenPlunder(player.getUniqueId(), plunder);
 
                 DatabaseManager.getInstance().getPlunderStateByIdAsync(player.getUniqueId(), blockId, stateResponse -> {
@@ -142,19 +155,20 @@ public class OpenPlunderListener implements Listener {
 
 
     private void fillInventoryWithLoot(Sound sound, Location location, String blockId, Player player){
+
         DatabaseManager.getInstance().getPlunderDataByIdAsync(blockId, response -> {
+
+            // Check response data - notify player
+            if (response == null){
+                player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.RED + "Loot database error. Please report this to an admin immediately.");
+                return;
+            }
 
             Bukkit.getScheduler().runTask(GoblinsPlunder.getInstance(), () -> {
 
-
-                if (response == null){
-                    player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.RED + "Loot database error. Please report this to an admin immediately.");
-                    System.err.println(ChatColor.DARK_RED + "[GP]" + ChatColor.RED + "");
-                    return;
-                }
-
                 if (response.getLootTableKey() != null && !response.getLootTableKey().equalsIgnoreCase("")) {
 
+                    // Set Flags to be transfered to the state
                     PlunderManager.getInstance().getOpenPlunderMap().get(player.getUniqueId()).setIgnoreRestock(response.getIgnoreRestock());
 
                     //Play sound
@@ -185,8 +199,6 @@ public class OpenPlunderListener implements Listener {
                     
                 } else if (response.getContents() != null){ // Filled from contents
 
-                    System.out.println(response.getIgnoreRestock());
-
                     PlunderManager.getInstance().getOpenPlunderMap().get(player.getUniqueId()).setIgnoreRestock(response.getIgnoreRestock());
 
                     //Play sound
@@ -202,7 +214,6 @@ public class OpenPlunderListener implements Listener {
                     try {
                         contents = Serializer.fromBase64(response.getContents());
                     } catch (Exception e) {
-                        System.err.println("[GP ERROR] " + e.getCause() +  " - " + e.getMessage());
                     }
 
                     playerChest.setContents(contents);

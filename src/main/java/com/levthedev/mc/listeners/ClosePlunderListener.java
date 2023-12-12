@@ -10,7 +10,6 @@ import org.bukkit.inventory.Inventory;
 
 import com.levthedev.mc.managers.DatabaseManager;
 import com.levthedev.mc.managers.PlunderManager;
-import com.levthedev.mc.utility.Serializer;
 
 public class ClosePlunderListener implements Listener {
 
@@ -23,7 +22,8 @@ public class ClosePlunderListener implements Listener {
         Inventory inv = event.getInventory();
 
 
-        if (plunderManager.getOpenPlunderMap().containsKey(event.getPlayer().getUniqueId())) {
+        if (plunderManager.getPlunder(event.getPlayer().getUniqueId()) != null && 
+            !plunderManager.getPlunder(event.getPlayer().getUniqueId()).getLocked() ) {
             // Retrieve necessary information
             
 
@@ -34,18 +34,9 @@ public class ClosePlunderListener implements Listener {
             
             player.getWorld().playSound(player.getLocation(), plunderManager.getOpenPlunderMap().get(player.getUniqueId()).getSound(), 1.0f, 1.0f);
 
-            // Serialize the state of the inventory
-            byte[] state = null;
-            try {
-                state = Serializer.toBase64(inv.getContents());
-            } catch (IOException e) {
-                System.err.println("[GP ERROR] " + e.getCause() +  " - " + e.getMessage());
-            }
-
             // Save the interaction asynchronously to the database
+            DatabaseManager.getInstance().createPlunderStateAsync(playerUuid, pbId, plunderManager.getPlunder(player.getUniqueId()).getWorldName(), plunderManager.getPlunder(player.getUniqueId()).getIgnoreRestock() , inv.getContents());
 
-            DatabaseManager.getInstance().createPlunderStateAsync(playerUuid, pbId, plunderManager.getPlunder(player.getUniqueId()).getWorldName(), plunderManager.getPlunder(player.getUniqueId()).getIgnoreRestock() ,state);
-            plunderManager.removeOpenPlunder(player.getUniqueId());
         }
     }
 

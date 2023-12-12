@@ -1,5 +1,7 @@
 package com.levthedev.mc.dao;
 
+import java.util.UUID;
+
 import org.bukkit.Sound;
 
 import lombok.AllArgsConstructor;
@@ -11,6 +13,17 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class Plunder {
+
+    // public Plunder() {
+    //     this.id = UUID.randomUUID().toString();
+    //     this.location = null;
+    //     this.blockType = null;
+    //     this.lootTableKey = null;
+    //     this.worldName = null;
+    //     this.ignoreRestock = null;
+    //     this.contents = null;
+    //     this.sound = null;
+    // }
 
     @NonNull
     private String id;
@@ -25,5 +38,6 @@ public class Plunder {
     private byte[] contents;
 
     private Sound sound;
-    private String responseMessage;
+    @NonNull
+    private Boolean locked;
 }

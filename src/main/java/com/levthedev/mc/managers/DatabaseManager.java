@@ -1,5 +1,6 @@
 package com.levthedev.mc.managers;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -9,12 +10,15 @@ import java.sql.Statement;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Consumer;
 
 import com.levthedev.mc.GoblinsPlunder;
@@ -22,6 +26,7 @@ import com.levthedev.mc.coordinators.DatabaseCoordinator;
 import com.levthedev.mc.dao.Plunder;
 import com.levthedev.mc.dao.PlunderState;
 import com.levthedev.mc.utility.PlunderCallback;
+import com.levthedev.mc.utility.Serializer;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
@@ -29,6 +34,7 @@ public class DatabaseManager {
     
     private static final GoblinsPlunder plugin = GoblinsPlunder.getInstance();
     private static DatabaseManager instance;
+    private Logger logger = plugin.getLogger();
     private HikariDataSource dataSource;
     private DatabaseCoordinator databaseCoordinator;
 
@@ -48,7 +54,7 @@ public class DatabaseManager {
 
             if (plugin.getConfig().getString("datasource.databaseName").isEmpty()){
                 setupDataSource(plugin.getConfig());
-            } else {
+            } else { // User provided a databaseName
                 setupDataSourceCustom(plugin.getConfig());
                 createTables();
             }
@@ -57,7 +63,7 @@ public class DatabaseManager {
         } catch (Exception e) {
 
             // If database not found, create it
-            if (DatabaseNotFoundException(e)){
+            if (isDatabaseNotFound(e)){
 
                 // Failed to find specified database - throw error
                 if (!plugin.getConfig().getString("datasource.databaseName").isEmpty()){
@@ -162,13 +168,19 @@ public class DatabaseManager {
         try (Statement stmt = conn.createStatement()) {
             String query = "CREATE TABLE plunder_blocks (" +
                            "id VARCHAR(36) PRIMARY KEY," +
-                           "location VARCHAR(255) NOT NULL UNIQUE," +
+                           "location VARCHAR(255) NOT NULL," +
                            "world_name VARCHAR(255) NOT NULL," +
                            "ignore_restock BOOLEAN NOT NULL DEFAULT FALSE," +
                            "block_type VARCHAR(255) NOT NULL," +
                            "loot_table_key VARCHAR(255), " +
-                           "contents BLOB);";
+                           "contents BLOB, " +
+                           "UNIQUE (location, world_name));";
             stmt.executeUpdate(query);
+            
+            logger.log(Level.INFO, this.getClass().getSimpleName() + ": Successfully created plunder_blocks table");
+    
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, this.getClass().getSimpleName() + ": Failed to create plunder_blocks table", e);   
         }
     }
 
@@ -183,6 +195,11 @@ public class DatabaseManager {
                            "PRIMARY KEY (player_uuid, pb_id)," +
                            "FOREIGN KEY (pb_id) REFERENCES plunder_blocks(id) ON DELETE CASCADE);";
             stmt.executeUpdate(query);
+
+            logger.log(Level.INFO, this.getClass().getSimpleName() + ": Successfully created plunder_state table");
+
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, this.getClass().getSimpleName() + ": Failed to create plunder_state table", e);        
         }
     }
 
@@ -194,11 +211,11 @@ public class DatabaseManager {
                  Statement stmt = conn.createStatement()) {
                 
                 stmt.executeUpdate(sql);
-                System.out.println("plunder_state table has been reset.");
+
+                logger.log(Level.INFO, this.getClass().getSimpleName() + ": Deleted all entries in plunder_state table | NOTE: only if (ignore_restock = false)");
     
             } catch (SQLException e) {
-                e.printStackTrace();
-                System.err.println("Error resetting plunder_state table: " + e.getMessage());
+                logger.log(Level.SEVERE, this.getClass().getSimpleName() + ": Failed to delete data in plunder_state", e);
             }
         });
     }
@@ -225,44 +242,65 @@ public class DatabaseManager {
                 stmt.setBytes(7, contents);
                 stmt.executeUpdate();
                 
+
+                // Success Messages
+
                 if (player != null) {
                     player.sendMessage(ConfigManager.getInstance().getPrefix() + ChatColor.DARK_GREEN + "Plunder successfully created:\n" + ChatColor.RESET + "" + ChatColor.GREEN + blockId);
                 }
 
-
                 if (ConfigManager.getInstance().isDebug()){
-                    System.out.println( "Plunder Added:\n"
-                                        + blockId + "\n" 
-                                        + loot_table_key + "\n"
-                                        + location + "\n");
+                    logger.log(Level.INFO, this.getClass().getSimpleName() + ": " + blockType + " added to plunder_blocks table \nblockId: " + blockId + "\nworld: " + worldName + "\nlocation: " + location + "\nlootTable: " + loot_table_key);
+
+                } else {
+                    logger.log(Level.INFO, this.getClass().getSimpleName() + ": " + blockType + " added to plunder_blocks table (" + blockId + ")"); 
                 }
 
             } catch (SQLException e) {
-                if (player != null) {
-                    player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.DARK_RED + "Database Error: " + ChatColor.RESET + "" + ChatColor.RED + e.getMessage());
-                }
+                logger.log(Level.SEVERE, this.getClass().getSimpleName() + ": Failed to create data in plunder_blocks", e);
             }
         });
 
     }
 
-    public void createPlunderStateAsync(String playerUuid, String pbId, String worldName, Boolean ignore_restock, byte[] state){
+    public void createPlunderStateAsync(String playerUuid, String pbId, String worldName, Boolean ignore_restock, ItemStack[] contents) {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             // Database operation
             String sql = "INSERT INTO plunder_state (player_uuid, pb_id, world_name, ignore_restock, state) VALUES (?, ?, ?, ?, ?) " +
                          "ON DUPLICATE KEY UPDATE state = ?;"; // Adjust SQL as needed
-    
+            
+            // Serialize the state of the inventory
+            byte[] state = null;
+            try {
+                state = Serializer.toBase64(contents);
+            } catch (IOException e) {
+                logger.log(Level.SEVERE, this.getClass().getSimpleName() + ": Failed to serialize inventory contents", e);
+                return;
+            }
+            
             try (Connection conn = dataSource.getConnection();
                  PreparedStatement stmt = conn.prepareStatement(sql)) {
                 stmt.setString(1, playerUuid);
                 stmt.setString(2, pbId);
                 stmt.setString(3, worldName);
-                stmt.setBoolean(4, ignore_restock);
+                stmt.setBoolean(4, ignore_restock != null ? ignore_restock : false);
                 stmt.setBytes(5, state);
                 stmt.setBytes(6, state); // For the ON DUPLICATE KEY clause
                 stmt.executeUpdate();
+                
+                // Remove from open map after success
+                PlunderManager.getInstance().removeOpenPlunder(UUID.fromString(playerUuid));
+
+                if (ConfigManager.getInstance().isDebug()){
+                    logger.log(Level.INFO, this.getClass().getSimpleName() + ": Saved interaction into plunder_state\nplayerUuid: " + playerUuid + "\nplunderBlockId: " + pbId);
+                } 
+
             } catch (SQLException e) {
-                System.err.println("Failed to save interaction to the database: block_id=" + pbId + "\n" + e);
+
+                // Couldn't save interaction, lock the chest.
+                PlunderManager.getInstance().getPlunder(UUID.fromString(playerUuid)).setLocked(true);
+
+                logger.log(Level.SEVERE, this.getClass().getSimpleName() + ": Failed to save interaction in plunder_state \n {\r\n   Player: " + Bukkit.getPlayer(UUID.fromString(playerUuid)).getName() + "("+ playerUuid +")" + ", \r\n   blockId: " + pbId + ", \r\n   worldName: " + worldName + ", \r\n   contents:" + formatItemStackArray(contents) + " }\nCause: ", e);
             }
         });
     }
@@ -281,18 +319,16 @@ public class DatabaseManager {
                 ResultSet rs = stmt.executeQuery();
         
                 if (rs.next()) {
-                    plunder = new Plunder(rs.getString("id"), rs.getString("location"), rs.getString("block_type"), rs.getString("loot_table_key"), rs.getString("world_name"), rs.getBoolean("ignore_restock"), rs.getBytes("contents"), null, "Success");
+                    plunder = new Plunder(rs.getString("id"), rs.getString("location"), rs.getString("block_type"), rs.getString("loot_table_key"), rs.getString("world_name"), rs.getBoolean("ignore_restock"), rs.getBytes("contents"), null,false);
                 }
 
             } catch (SQLException e) {
-                String error = ChatColor.DARK_RED + "" + ChatColor.BOLD + "[Database Error]: " + e.getMessage();
-                plunder = new Plunder(null,null,null,null,null, null, null, null, error);
+                logger.log(Level.SEVERE, this.getClass().getSimpleName() + ": Failed to fetch data in plunder_blocks", e);
             }
 
 
 
             // Callback to the main thread
-
             final Plunder response = plunder;
             Bukkit.getScheduler().runTask(GoblinsPlunder.getInstance(), () -> callback.onQueryFinish(response));
 
@@ -313,12 +349,11 @@ public class DatabaseManager {
                 ResultSet rs = stmt.executeQuery();
     
                 if (rs.next()) {
-                    
                     plunderState = new PlunderState(playerUuid, blockId, rs.getBytes("state"), rs.getBoolean("ignore_restock"));
                 }
     
             } catch (SQLException e) {
-                e.printStackTrace();
+                logger.log(Level.SEVERE, this.getClass().getSimpleName() + ": Failed to fetch data from plunder_state", e);
             }
     
             // Callback to the main thread
@@ -344,11 +379,17 @@ public class DatabaseManager {
                 }
                 
                 stmt.executeUpdate();
-                System.out.println("Deleted " + blockIds.size() + " plunder_blocks entries.");
+
+                // Success Messages
+                if (ConfigManager.getInstance().isDebug()){
+                    logger.log(Level.INFO, this.getClass().getSimpleName() + ": Deleted " + (index-1) + " entries from plunder_blocks table \n" + String.join(", " , blockIds));
+
+                } else {
+                    logger.log(Level.INFO, this.getClass().getSimpleName() + ": Deleted " + (index-1) + " entries from plunder_blocks table");
+                }
     
             } catch (SQLException e) {
-                e.printStackTrace();
-                System.err.println("Error deleting plunder_blocks entries: " + e.getMessage());
+                logger.log(Level.SEVERE, this.getClass().getSimpleName() + ": Failed to delete data from plunder_blocks", e);
             }
         });
     }
@@ -362,16 +403,15 @@ public class DatabaseManager {
                 stmt.setString(1, worldName);
                 stmt.executeUpdate();
 
+
+                // Success Messages
                 sender.sendMessage(ConfigManager.getInstance().getPrefix() + ChatColor.GREEN + "Deleted all entries in " + worldName);
 
-                System.out.println("plunder_block entries for world " + worldName + " have been deleted.");
+                logger.log(Level.INFO, this.getClass().getSimpleName() + ": Deleted all entries for " + worldName + " in plunder_blocks table");
     
             } catch (SQLException e) {
 
-                sender.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.RED + "Failed deleting entries in " + worldName);
-
-                e.printStackTrace();
-                System.err.println("Error deleting plunder_block entries for world " + worldName + ": " + e.getMessage());
+                logger.log(Level.SEVERE, this.getClass().getSimpleName() + ": Failed to delete entries from plunder_blocks for world: " + worldName, e);
             }
         });
     }
@@ -385,11 +425,11 @@ public class DatabaseManager {
                 
                 stmt.setString(1, worldName);
                 stmt.executeUpdate();
-                System.out.println("plunder_state entries for world " + worldName + " have been deleted.");
+
+                logger.log(Level.INFO, this.getClass().getSimpleName() + ": Deleted all entries for " + worldName + " in plunder_state table");
     
             } catch (SQLException e) {
-                e.printStackTrace();
-                System.err.println("Error deleting plunder_state entries for world " + worldName + ": " + e.getMessage());
+                logger.log(Level.SEVERE, this.getClass().getSimpleName() + ": Failed to delete entries from plunder_state for world: " + worldName, e);
             }
         });
     }
@@ -407,12 +447,29 @@ public class DatabaseManager {
         }
     }
 
+    public String formatItemStackArray(ItemStack[] items) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{\r\n\r");
+        for (int i = 0; i < items.length; i++) {
+            ItemStack item = items[i];
+            if (item != null) {
+                String itemName = item.getType().toString();
+                int amount = item.getAmount();
+                sb.append("      Position ").append(i).append(": ").append(itemName).append(" x").append(amount).append("\n");
+            } else {
+                sb.append("      Position ").append(i).append(": Empty\n");
+            }
+        }
+        sb.append("   }\n");
+        return sb.toString();
+    }
+
 
     // ############################
     // ##   EXCEPTION HANDLING   ##
     // ############################
 
-    private boolean DatabaseNotFoundException(Exception e){
+    private boolean isDatabaseNotFound(Exception e){
         return e.getMessage().contains("Unknown database");
     }
 

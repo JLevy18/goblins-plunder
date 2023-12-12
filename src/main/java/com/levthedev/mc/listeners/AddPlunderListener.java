@@ -1,13 +1,11 @@
 package com.levthedev.mc.listeners;
 
+import java.io.ObjectInputFilter.Config;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.block.Barrel;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -24,12 +22,10 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.loot.LootTable;
 
 import com.levthedev.mc.GoblinsPlunder;
 import com.levthedev.mc.managers.ConfigManager;
 import com.levthedev.mc.managers.DatabaseManager;
-import com.levthedev.mc.managers.PlunderManager;
 
 import net.md_5.bungee.api.ChatColor;
 
@@ -78,70 +74,44 @@ public class AddPlunderListener implements Listener {
         }
     }  
 
-    // Add Plunder using command (Barrels and Chests)
-
+    // Add Plunder using command
     @EventHandler
     public void onAddPlunder(PlayerInteractEvent event) {
+
         Player player = event.getPlayer();
 
         if (activePlayers.get(player) == null) return;
-
         event.setCancelled(true);
+        if (!((event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.LEFT_CLICK_BLOCK ) && event.getHand() == EquipmentSlot.HAND)) return;
 
-        if ((event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.LEFT_CLICK_BLOCK ) && event.getHand() == EquipmentSlot.HAND) {
+        Block clickedBlock = event.getClickedBlock();
 
-            Block clickedBlock = event.getClickedBlock();
+        if (clickedBlock == null) return;
+            
+        if (!(clickedBlock.getState() instanceof Container)){
+            event.getPlayer().sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.DARK_RED + "Invalid block type: " + ChatColor.RESET + "" + ChatColor.RED + "block must be a container.");
+            setActive(player, false, null);
+            return;
+        }
+            
+        Container container = (Container) clickedBlock.getState();
+        String loot_table_key = setLootTable(container);
 
-            if (clickedBlock != null) {
-                
-                // Block must be a container
-                if (clickedBlock.getState() instanceof Container){
-                    
-                    Container container = (Container) clickedBlock.getState();
+        // Check container loottable , if null check inventory, if empty error
 
-                    // 1. LootTable
-                    // 2. Inventory Contents
-                    // 3. Error
-
-                    String loot_table_key = null;
-
-                    if (container instanceof Chest){
-                        Chest chest = (Chest) container;
-                        
-                        // Check if loottable on chest
-                        if (chest.getLootTable() != null){
-                            loot_table_key = chest.getLootTable().getKey().toString();
-                        } else if (chest.getInventory().isEmpty()){ // No loottable, check chest contents
-                            player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.RED + "Failed to add chest to db: LootTable invalid or Container is empty.");
-                            setActive(player, false, null);
-                            return;
-                        }
-
-                    } else if (container instanceof Barrel){
-                        Barrel barrel = (Barrel) container;
-        
-                        // Check if loottable on chest
-                        if (barrel.getLootTable() != null){
-                            loot_table_key = barrel.getLootTable().getKey().toString();
-                        } else if (barrel.getInventory().isEmpty()){ // No loottable, check chest contents
-                            player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.RED + "Failed to add chest to db: LootTable invalid or Container is empty.");
-                            setActive(player, false, null);
-                            return;
-                        }
-                    } 
-
-                    DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderDataByBlock(clickedBlock, event.getPlayer(), activePlayers.get(player), loot_table_key);
-        
-                    
-                } else {
-                    event.getPlayer().sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.DARK_RED + "Invalid block type: " + ChatColor.RESET + "" + ChatColor.RED + "block must be a container.");
-                }
-
+        if (loot_table_key != null) {
+            DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderDataByBlock(clickedBlock, event.getPlayer(), activePlayers.get(player), loot_table_key);
+        } else {
+            if (container.getInventory().isEmpty()){
+                player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.RED + "Container can't be empty.");
+                setActive(player, false, null);
+                return;
             }
-
+            DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderDataByBlock(clickedBlock, event.getPlayer(), activePlayers.get(player), loot_table_key);
         }
 
         setActive(player, false, null);
+
     }
 
 
@@ -190,4 +160,28 @@ public class AddPlunderListener implements Listener {
         });
 
     }
+
+
+    // Check if container has a LootTable
+
+    public String setLootTable(Container container){
+
+        if (container instanceof Chest chest){
+            
+            // Check if loottable on chest
+            if (chest.getLootTable() != null){
+                return chest.getLootTable().getKey().toString();
+            }
+
+        } else if (container instanceof Barrel barrel){
+
+            if (barrel.getLootTable() != null){
+                return barrel.getLootTable().getKey().toString();
+            }
+        } 
+
+
+        return null;
+    }
+
 }

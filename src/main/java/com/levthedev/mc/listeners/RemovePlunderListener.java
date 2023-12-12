@@ -23,6 +23,8 @@ import com.levthedev.mc.GoblinsPlunder;
 import com.levthedev.mc.managers.ConfigManager;
 import com.levthedev.mc.managers.DatabaseManager;
 
+import net.md_5.bungee.api.ChatColor;
+
 public class RemovePlunderListener implements Listener {
 
 
@@ -50,6 +52,7 @@ public class RemovePlunderListener implements Listener {
 
                 if(container.getPersistentDataContainer().getKeys().toString().contains("goblinsplunder")){
                     container.getInventory().clear();
+                    event.getPlayer().sendMessage(ConfigManager.getInstance().getPrefix() + ChatColor.GOLD + "Deleted plunder: \n" + container.getPersistentDataContainer().get(new NamespacedKey(GoblinsPlunder.getInstance(), "blockid"), PersistentDataType.STRING));
                     DatabaseManager.getInstance().deletePlunderBlocksByIdsAsync(Arrays.asList(container.getPersistentDataContainer().get(new NamespacedKey(GoblinsPlunder.getInstance(), "blockid"), PersistentDataType.STRING)));
                 }
             }
@@ -71,6 +74,7 @@ public class RemovePlunderListener implements Listener {
             event.setCancelled(true);
         }else{
             cart.getInventory().clear();
+            player.sendMessage(ConfigManager.getInstance().getPrefix() + ChatColor.GOLD + "Deleted plunder: \n" + cart.getPersistentDataContainer().get(new NamespacedKey(GoblinsPlunder.getInstance(), "blockid"), PersistentDataType.STRING));
             DatabaseManager.getInstance().deletePlunderBlocksByIdsAsync(Arrays.asList(cart.getPersistentDataContainer().get(new NamespacedKey(GoblinsPlunder.getInstance(), "blockid"), PersistentDataType.STRING)));
         }
 
