@@ -1,6 +1,5 @@
 package com.levthedev.mc.listeners;
 
-import java.io.ObjectInputFilter.Config;
 import java.util.HashMap;
 import java.util.Map;
 

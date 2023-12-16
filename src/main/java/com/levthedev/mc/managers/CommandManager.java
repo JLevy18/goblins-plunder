@@ -15,6 +15,7 @@ import com.levthedev.mc.commands.subcommands.HelpCommand;
 import com.levthedev.mc.commands.subcommands.ReloadCommand;
 import com.levthedev.mc.commands.subcommands.RemoveCommand;
 import com.levthedev.mc.commands.subcommands.RestockCommand;
+import com.levthedev.mc.commands.subcommands.UpdateCommand;
 
 public class CommandManager implements CommandExecutor {
 
@@ -27,6 +28,7 @@ public class CommandManager implements CommandExecutor {
         commands.add(new AddCommand());
         commands.add(new RestockCommand());
         commands.add(new RemoveCommand());
+        commands.add(new UpdateCommand());
     }
 
 

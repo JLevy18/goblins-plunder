@@ -46,7 +46,6 @@ public class OpenPlunderListener implements Listener {
     public void onPlunderOpen(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         if (event.isCancelled()) return;
-        if (player.isSneaking()) return;
 
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getHand() == EquipmentSlot.HAND) {
 
@@ -63,16 +62,17 @@ public class OpenPlunderListener implements Listener {
 
 
                     // Make sure plunder is not already open
-                    // Right now, if a player gets locked. They are locked from all plunders until an admin fixes them.
-                    if (PlunderManager.getInstance().getPlunder(player.getUniqueId()).getLocked()){
+                    if (PlunderManager.getInstance().getOpenPlunder(player.getUniqueId()) != null){
 
-                        player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.RED + "Database failure! Please contact an admin immediately.");
-                        logger.log(Level.SEVERE, this.getClass().getSimpleName() + ": Error occurred when saving interaction. \n {\r\n   Player: " + player.getName() + "(" + player.getUniqueId() + ")" + ", \r\n   blockId: " + blockId + ", \r\n   worldName: " + container.getWorld().getName() + "\r\n }");
+                        player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.RED + "You can't loot this plunder right now.");
+                        logger.log(Level.WARNING, this.getClass().getSimpleName() + ": A player is trying to loot a plunder that is already open. \nThis usually indicates an attempt to dupe items. Continued spam will decrease database performance.\n {\r\n   Player: " + player.getName() + "(" + player.getUniqueId() + ")" + ", \r\n   blockId: " + blockId + ", \r\n   worldName: " + container.getWorld().getName() + "\r\n }");
 
+                        // We do not want to open the chest so we return
                         return;
                     }
 
-                    
+
+                    // Add to open plunder list
                     PlunderManager.getInstance().addOpenPlunder(player.getUniqueId(), new Plunder(blockId, "", "", null, container.getWorld().getName(),null, null, null, false));
 
 
@@ -81,10 +81,10 @@ public class OpenPlunderListener implements Listener {
                             // No existing interaction, fill with loot table items
 
                             if (container instanceof Chest){
-                                PlunderManager.getInstance().getPlunder(player.getUniqueId()).setSound(Sound.BLOCK_CHEST_CLOSE);
+                                PlunderManager.getInstance().getOpenPlunder(player.getUniqueId()).setSound(Sound.BLOCK_CHEST_CLOSE);
                                 fillInventoryWithLoot(Sound.BLOCK_CHEST_OPEN,container.getLocation(), blockId, player);
                             } else if (container instanceof Barrel){
-                                PlunderManager.getInstance().getPlunder(player.getUniqueId()).setSound(Sound.BLOCK_BARREL_CLOSE);
+                                PlunderManager.getInstance().getOpenPlunder(player.getUniqueId()).setSound(Sound.BLOCK_BARREL_CLOSE);
                                 fillInventoryWithLoot(Sound.BLOCK_BARREL_OPEN,container.getLocation(), blockId, player);
                             }
 
@@ -94,18 +94,18 @@ public class OpenPlunderListener implements Listener {
                             if (container instanceof Chest){
                                 
                                 if (stateResponse.getIgnoreRestock() != null) {
-                                    PlunderManager.getInstance().getPlunder(player.getUniqueId()).setIgnoreRestock(stateResponse.getIgnoreRestock());
+                                    PlunderManager.getInstance().getOpenPlunder(player.getUniqueId()).setIgnoreRestock(stateResponse.getIgnoreRestock());
                                 }
 
-                                PlunderManager.getInstance().getPlunder(player.getUniqueId()).setSound(Sound.BLOCK_CHEST_CLOSE);
+                                PlunderManager.getInstance().getOpenPlunder(player.getUniqueId()).setSound(Sound.BLOCK_CHEST_CLOSE);
                                 fillInventoryWithSavedState(Sound.BLOCK_CHEST_OPEN,container.getLocation(), stateResponse.getStateData(), player);
                             } else if (container instanceof Barrel){
 
                                 if (stateResponse.getIgnoreRestock() != null) {
-                                    PlunderManager.getInstance().getPlunder(player.getUniqueId()).setIgnoreRestock(stateResponse.getIgnoreRestock());
+                                    PlunderManager.getInstance().getOpenPlunder(player.getUniqueId()).setIgnoreRestock(stateResponse.getIgnoreRestock());
                                 }
 
-                                PlunderManager.getInstance().getPlunder(player.getUniqueId()).setSound(Sound.BLOCK_BARREL_CLOSE);
+                                PlunderManager.getInstance().getOpenPlunder(player.getUniqueId()).setSound(Sound.BLOCK_BARREL_CLOSE);
                                 fillInventoryWithSavedState(Sound.BLOCK_BARREL_OPEN,container.getLocation(), stateResponse.getStateData(), player);
                             }
                         }
@@ -128,11 +128,25 @@ public class OpenPlunderListener implements Listener {
 
             if (con.getKeys().toString().contains("goblinsplunder")) {
 
+
                 // DO NOT LET PLAYER OPEN THE CHEST
                 event.setCancelled(true);
                 String blockId = con.get(new NamespacedKey(GoblinsPlunder.getInstance(), "blockid"), PersistentDataType.STRING);
-                Plunder plunder = new Plunder(blockId, null, null, null, cart.getWorld().getName(), null, null, null, false);
-                PlunderManager.getInstance().addOpenPlunder(player.getUniqueId(), plunder);
+
+
+                // Make sure plunder is not already open
+                // Right now, if a player gets locked. They are locked from all plunders until an admin fixes them.
+                if (PlunderManager.getInstance().getOpenPlunder(player.getUniqueId()) != null){
+
+                    player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.RED + "You can't loot this plunder right now.");
+                    logger.log(Level.WARNING, this.getClass().getSimpleName() + ": A player is trying to loot a plunder that is already open. \nThis usually indicates an attempt to dupe items. Continued spam will decrease database performance.\n {\r\n   Player: " + player.getName() + "(" + player.getUniqueId() + ")" + ", \r\n   blockId: " + blockId + ", \r\n   worldName: " + cart.getWorld().getName() + "\r\n }");
+
+                    return;
+                }
+
+                    // Add to open plunder list
+                    PlunderManager.getInstance().addOpenPlunder(player.getUniqueId(), new Plunder(blockId, "", "", null, cart.getWorld().getName(),null, null, null, false));
+
 
                 DatabaseManager.getInstance().getPlunderStateByIdAsync(player.getUniqueId(), blockId, stateResponse -> {
                     if (stateResponse == null || stateResponse.getPlayerUuid() == null) {
@@ -145,13 +159,9 @@ public class OpenPlunderListener implements Listener {
                         fillInventoryWithSavedState(null, null, stateResponse.getStateData(), player);
                     }
                 });     
-
             }
-
         }
-
     }
-
 
 
     private void fillInventoryWithLoot(Sound sound, Location location, String blockId, Player player){
@@ -160,7 +170,15 @@ public class OpenPlunderListener implements Listener {
 
             // Check response data - notify player
             if (response == null){
-                player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.RED + "Loot database error. Please report this to an admin immediately.");
+                player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.RED + "Unrecognized Plunder. Please report to an admin immediately.");
+
+                logger.log(Level.SEVERE, this.getClass().getSimpleName() + ": " + player.getName() + "tried to open a plunder that no longer exists in the database.\n" +
+                                                                           "Plunder: " + blockId + "\n" +
+                                                                           "Location: (X: " + location.getX() + ", Y: " + location.getY() + ", Z: " + location.getZ() + ")");
+
+                
+                PlunderManager.getInstance().removeOpenPlunder(player.getUniqueId());
+
                 return;
             }
 
@@ -169,7 +187,7 @@ public class OpenPlunderListener implements Listener {
                 if (response.getLootTableKey() != null && !response.getLootTableKey().equalsIgnoreCase("")) {
 
                     // Set Flags to be transfered to the state
-                    PlunderManager.getInstance().getOpenPlunderMap().get(player.getUniqueId()).setIgnoreRestock(response.getIgnoreRestock());
+                    PlunderManager.getInstance().getOpenPlunder(player.getUniqueId()).setIgnoreRestock(response.getIgnoreRestock());
 
                     //Play sound
                     if (sound != null && location != null){
@@ -184,8 +202,12 @@ public class OpenPlunderListener implements Listener {
                         String[] lootKeySplit = response.getLootTableKey().split(":");
                         lootTable = Bukkit.getLootTable(NamespacedKey.minecraft(lootKeySplit[1]));
                     } catch (Exception e) {
-                        player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.RED + "Error generating loot: " + response.getLootTableKey() + " not found.");
-                        PlunderManager.getInstance().getOpenPlunderMap().remove(player.getUniqueId());
+
+                        player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.RED + "Error generating loot - LootTable not found.");
+
+                        logger.log(Level.SEVERE, this.getClass().getSimpleName() + player.getName() + " tried to generate loot using an undefined LootTable (" + 
+                        lootTable.getKey().getKey().toString() != null ? lootTable.getKey().getKey().toString() : "missing minecraft namespace" + ")" , e);
+                        PlunderManager.getInstance().removeOpenPlunder(player.getUniqueId());;
                         return;
                     }
                     LootContext.Builder builder = new LootContext.Builder(player.getLocation());
@@ -199,7 +221,7 @@ public class OpenPlunderListener implements Listener {
                     
                 } else if (response.getContents() != null){ // Filled from contents
 
-                    PlunderManager.getInstance().getOpenPlunderMap().get(player.getUniqueId()).setIgnoreRestock(response.getIgnoreRestock());
+                    PlunderManager.getInstance().getOpenPlunder(player.getUniqueId()).setIgnoreRestock(response.getIgnoreRestock());
 
                     //Play sound
                     if (sound != null && location != null){
@@ -214,6 +236,8 @@ public class OpenPlunderListener implements Listener {
                     try {
                         contents = Serializer.fromBase64(response.getContents());
                     } catch (Exception e) {
+                        logger.log(Level.SEVERE, this.getClass().getSimpleName() + ": Failed to deserialize inventory contents", e);
+                        return;
                     }
 
                     playerChest.setContents(contents);
@@ -240,7 +264,8 @@ public class OpenPlunderListener implements Listener {
             try {
               contents = Serializer.fromBase64(data);  
             } catch (Exception e) {
-                System.err.println("[GP Error] Serializer failed to deserialize contents\n" + e.getMessage());
+                logger.log(Level.SEVERE, this.getClass().getSimpleName() + ": Failed to deserialize inventory contents from previous state", e);
+                return;
             }
 
             playerChest.setStorageContents(contents);

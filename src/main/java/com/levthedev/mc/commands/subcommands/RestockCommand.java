@@ -34,7 +34,7 @@ public class RestockCommand extends SubCommand{
 
         if (args.length == 2 && args[1].equalsIgnoreCase("all")) { 
             DatabaseManager.getInstance().resetPlunderStateTableAsync();
-
+            
             if (ConfigManager.getInstance().isBroadcastRestockEnabled()){
                 broadcast();
             }

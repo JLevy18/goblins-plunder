@@ -28,11 +28,11 @@ public class PlunderManager {
         openPlunderMap.put(playerUuid, plunder);
     }
 
-    public String getPlunderId(UUID playerUuid){
+    public String getOpenPlunderId(UUID playerUuid){
         return openPlunderMap.get(playerUuid).getId();
     }
 
-    public Plunder getPlunder(UUID playerUuid){
+    public Plunder getOpenPlunder(UUID playerUuid){
         return openPlunderMap.get(playerUuid);
     }
 
@@ -40,8 +40,8 @@ public class PlunderManager {
         openPlunderMap.remove(playerUuid);
     }
 
-    public Map<UUID,Plunder> getOpenPlunderMap(){
-        return openPlunderMap;
+    public void clearOpenPlunders() {
+        openPlunderMap.clear();
     }
 
 

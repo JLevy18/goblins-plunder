@@ -38,10 +38,6 @@ public final class GoblinsPlunder extends JavaPlugin {
         // The order of these operations is very important in this function
         // Some of the managers are singletons and need to be initialized first
 
-
-        // Setup Config
-        saveDefaultConfig();
-
         // Initialize all the things
         instance = this;
 

@@ -211,9 +211,12 @@ public class DatabaseManager {
                  Statement stmt = conn.createStatement()) {
                 
                 stmt.executeUpdate(sql);
+                
+                PlunderManager.getInstance().clearOpenPlunders();
+
 
                 logger.log(Level.INFO, this.getClass().getSimpleName() + ": Deleted all entries in plunder_state table | NOTE: only if (ignore_restock = false)");
-    
+                
             } catch (SQLException e) {
                 logger.log(Level.SEVERE, this.getClass().getSimpleName() + ": Failed to delete data in plunder_state", e);
             }
@@ -273,7 +276,7 @@ public class DatabaseManager {
             byte[] state = null;
             try {
                 state = Serializer.toBase64(contents);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 logger.log(Level.SEVERE, this.getClass().getSimpleName() + ": Failed to serialize inventory contents", e);
                 return;
             }
@@ -297,9 +300,9 @@ public class DatabaseManager {
 
             } catch (SQLException e) {
 
-                // Couldn't save interaction, lock the chest.
-                PlunderManager.getInstance().getPlunder(UUID.fromString(playerUuid)).setLocked(true);
-
+                // Couldn't save interaction
+                ConfigManager.getInstance().logInventoryData(state, Bukkit.getPlayer(UUID.fromString(playerUuid)).getDisplayName(), pbId);
+                
                 logger.log(Level.SEVERE, this.getClass().getSimpleName() + ": Failed to save interaction in plunder_state \n {\r\n   Player: " + Bukkit.getPlayer(UUID.fromString(playerUuid)).getName() + "("+ playerUuid +")" + ", \r\n   blockId: " + pbId + ", \r\n   worldName: " + worldName + ", \r\n   contents:" + formatItemStackArray(contents) + " }\nCause: ", e);
             }
         });
@@ -425,6 +428,8 @@ public class DatabaseManager {
                 
                 stmt.setString(1, worldName);
                 stmt.executeUpdate();
+
+                PlunderManager.getInstance().clearOpenPlunders();
 
                 logger.log(Level.INFO, this.getClass().getSimpleName() + ": Deleted all entries for " + worldName + " in plunder_state table");
     
