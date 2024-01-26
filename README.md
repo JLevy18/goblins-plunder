@@ -23,8 +23,7 @@ It allows containers to serve instanced loot to players. Meaning, that each play
 
 **Option 1:** Place the jar into the plugin folder of the server and start the server. This will generate the config file. Within the config.yml file add the proper database connection information along with any other configurations and restart the server.
 
-**Option 2:** Create a folder in the plugin folder of the server called ```GoblinsPlunder```. Inside this folder create a file called ```config.yml``` and copy the contents below into it. Update the file with the proper database connection information along with any other configurations and start the server.
-
+**Option 2:** Create a folder in the plugin folder of the server called ```GoblinsPlunder```. Inside this folder create a file called ```config.yml``` and copy the contents below into it. Update the file with the proper database connection information along with any other configurations. Place the jar into the plugin folder of the server and start the server.
 
 ### config.yml
 ```
