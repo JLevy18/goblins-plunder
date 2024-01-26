@@ -29,6 +29,7 @@ import org.bukkit.persistence.PersistentDataType;
 
 import com.levthedev.mc.GoblinsPlunder;
 import com.levthedev.mc.dao.Plunder;
+import com.levthedev.mc.events.SpamPlunderEvent;
 import com.levthedev.mc.managers.ConfigManager;
 import com.levthedev.mc.managers.DatabaseManager;
 import com.levthedev.mc.managers.PlunderManager;
@@ -65,8 +66,10 @@ public class OpenPlunderListener implements Listener {
                     if (PlunderManager.getInstance().getOpenPlunder(player.getUniqueId()) != null){
 
                         player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.RED + "You can't loot this plunder right now.");
-                        logger.log(Level.WARNING, this.getClass().getSimpleName() + ": A player is trying to loot a plunder that is already open. \nThis usually indicates an attempt to dupe items. Continued spam will decrease database performance.\n {\r\n   Player: " + player.getName() + "(" + player.getUniqueId() + ")" + ", \r\n   blockId: " + blockId + ", \r\n   worldName: " + container.getWorld().getName() + "\r\n }");
+                        logger.log(Level.WARNING, this.getClass().getSimpleName() + ": A player is trying to loot a plunder that is already open. \nContinued spam will decrease database performance.\n {\r\n   Player: " + player.getName() + "(" + player.getUniqueId() + ")" + ", \r\n   blockId: " + blockId + ", \r\n   worldName: " + container.getWorld().getName() + "\r\n }");
 
+                        SpamPlunderEvent spamEvent = new SpamPlunderEvent("A player is trying to loot a plunder that is already open. \nContinued spam will decrease database performance.\n {\r\n   Player: " + player.getName() + "(" + player.getUniqueId() + ")" + ", \r\n   blockId: " + blockId + ", \r\n   worldName: " + container.getWorld().getName() + "\r\n }");
+                        Bukkit.getServer().getPluginManager().callEvent(spamEvent);
                         // We do not want to open the chest so we return
                         return;
                     }

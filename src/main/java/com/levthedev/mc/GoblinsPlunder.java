@@ -7,6 +7,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.levthedev.mc.coordinators.DatabaseCoordinator;
+import com.levthedev.mc.events.SpamPlunderEvent;
 import com.levthedev.mc.listeners.AddPlunderListener;
 import com.levthedev.mc.listeners.ClosePlunderListener;
 import com.levthedev.mc.listeners.OpenPlunderListener;
@@ -50,12 +51,11 @@ public final class GoblinsPlunder extends JavaPlugin {
 
         populateListeners();
         ListenerManager.initialize(listeners);
-
         
         this.getCommand("gp").setExecutor(new CommandManager());
         this.getCommand("gp").setTabCompleter(new TabCompleteManager());
 
-    }
+    } 
 
     @Override
     public void onDisable(){

@@ -1,7 +1,9 @@
 package com.levthedev.mc.listeners;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -31,17 +33,22 @@ import net.md_5.bungee.api.ChatColor;
 public class AddPlunderListener implements Listener {
 
     // This is a set of the players that are concurrently running the command
-    private Map<Player, Boolean> activePlayers = new HashMap<>();
+    private List<Player> activePlayers = new ArrayList<>();
 
-    public void setActive(Player player, boolean active, Boolean ignore_restock) {
-        if (active) {
-            activePlayers.put(player, ignore_restock);
+    private Map<Player,Map<String,String>> playerFlags = new ConcurrentHashMap<Player,Map<String,String>>();
+
+    public void setActivePlayer(Player player, boolean isActive) {
+        if (isActive) {
+            activePlayers.add(player);
         } else {
             activePlayers.remove(player);
+            playerFlags.remove(player);
         }
     }
 
-
+    public void setPlayerFlags(Player player, Map<String,String> flags){
+        playerFlags.put(player, flags);
+    }
 
     @EventHandler
     public void onCreateDoubleChest(BlockPlaceEvent event) {
@@ -79,7 +86,7 @@ public class AddPlunderListener implements Listener {
 
         Player player = event.getPlayer();
 
-        if (activePlayers.get(player) == null) return;
+        if (!activePlayers.contains(player)) return;
         event.setCancelled(true);
         if (!((event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.LEFT_CLICK_BLOCK ) && event.getHand() == EquipmentSlot.HAND)) return;
 
@@ -89,7 +96,7 @@ public class AddPlunderListener implements Listener {
             
         if (!(clickedBlock.getState() instanceof Container)){
             event.getPlayer().sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.DARK_RED + "Invalid block type: " + ChatColor.RESET + "" + ChatColor.RED + "block must be a container.");
-            setActive(player, false, null);
+            setActivePlayer(player, false);
             return;
         }
             
@@ -98,18 +105,24 @@ public class AddPlunderListener implements Listener {
 
         // Check container loottable , if null check inventory, if empty error
 
+        boolean ignore_restock = false;
+
+        if (playerFlags.get(player) != null){
+            ignore_restock = playerFlags.get(player).containsKey("ignorerestock");
+        }
+
         if (loot_table_key != null) {
-            DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderDataByBlock(clickedBlock, event.getPlayer(), activePlayers.get(player), loot_table_key);
+            DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderDataByBlock(clickedBlock, player, ignore_restock, loot_table_key);
         } else {
             if (container.getInventory().isEmpty()){
                 player.sendMessage(ConfigManager.getInstance().getErrorPrefix() + ChatColor.RED + "Container can't be empty.");
-                setActive(player, false, null);
+                setActivePlayer(player, false);
                 return;
             }
-            DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderDataByBlock(clickedBlock, event.getPlayer(), activePlayers.get(player), loot_table_key);
+            DatabaseManager.getInstance().getDatabaseCoordinator().createPlunderDataByBlock(clickedBlock, player, ignore_restock, loot_table_key);
         }
 
-        setActive(player, false, null);
+        setActivePlayer(player, false);
 
     }
 

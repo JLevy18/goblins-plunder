@@ -27,8 +27,8 @@ public class TabCompleteManager implements TabCompleter {
         commands.add("remove");
 
 
-
         addOptions.add("-ignoreRestock");
+
 
         restockOptions.add(ChatColor.ITALIC + "<World>");
         restockOptions.add("all");
@@ -59,6 +59,7 @@ public class TabCompleteManager implements TabCompleter {
         if (args.length == 2 && args[0].equalsIgnoreCase("remove")) {
             StringUtil.copyPartialMatches(args[1], removeOptions, completions);
         }
+
 
         return completions;
     }

@@ -1,8 +1,13 @@
 package com.levthedev.mc.managers;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -42,16 +47,6 @@ public class ConfigManager {
         }
     }
 
-    public void logInventoryData(byte[] contents, String playerName, String blockId){
-
-        File logFile = new File(logFolder, blockId + "_" + playerName);
-
-        try (FileOutputStream fos = new FileOutputStream(logFile)) {
-            fos.write(contents);
-        } catch (IOException e) {
-            logger.log(Level.SEVERE, this.getClass().getSimpleName() + ": Failed to save exact inventory log. An abbreviated contents can be found in the console logs.", e);
-        }
-    }
 
     public void reloadConfig(){
         plugin.reloadConfig();

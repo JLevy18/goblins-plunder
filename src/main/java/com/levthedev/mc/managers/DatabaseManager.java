@@ -56,9 +56,8 @@ public class DatabaseManager {
                 setupDataSource(plugin.getConfig());
             } else { // User provided a databaseName
                 setupDataSourceCustom(plugin.getConfig());
-                createTables();
             }
-
+            createTables();
 
         } catch (Exception e) {
 
@@ -254,9 +253,6 @@ public class DatabaseManager {
 
                 if (ConfigManager.getInstance().isDebug()){
                     logger.log(Level.INFO, this.getClass().getSimpleName() + ": " + blockType + " added to plunder_blocks table \nblockId: " + blockId + "\nworld: " + worldName + "\nlocation: " + location + "\nlootTable: " + loot_table_key);
-
-                } else {
-                    logger.log(Level.INFO, this.getClass().getSimpleName() + ": " + blockType + " added to plunder_blocks table (" + blockId + ")"); 
                 }
 
             } catch (SQLException e) {
@@ -291,7 +287,8 @@ public class DatabaseManager {
                 stmt.setBytes(6, state); // For the ON DUPLICATE KEY clause
                 stmt.executeUpdate();
                 
-                // Remove from open map after success
+        
+                // Remove from open map
                 PlunderManager.getInstance().removeOpenPlunder(UUID.fromString(playerUuid));
 
                 if (ConfigManager.getInstance().isDebug()){
@@ -299,12 +296,11 @@ public class DatabaseManager {
                 } 
 
             } catch (SQLException e) {
-
-                // Couldn't save interaction
-                ConfigManager.getInstance().logInventoryData(state, Bukkit.getPlayer(UUID.fromString(playerUuid)).getDisplayName(), pbId);
                 
                 logger.log(Level.SEVERE, this.getClass().getSimpleName() + ": Failed to save interaction in plunder_state \n {\r\n   Player: " + Bukkit.getPlayer(UUID.fromString(playerUuid)).getName() + "("+ playerUuid +")" + ", \r\n   blockId: " + pbId + ", \r\n   worldName: " + worldName + ", \r\n   contents:" + formatItemStackArray(contents) + " }\nCause: ", e);
             }
+
+
         });
     }
 
@@ -363,6 +359,30 @@ public class DatabaseManager {
             final PlunderState response = plunderState;
             Bukkit.getScheduler().runTask(plugin, () -> callback.accept(response));
         });
+    }
+
+    public void updatePlunderStateAsync(String playerUuid, String pbId, byte[] newState) {
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            String sql = "UPDATE plunder_state SET state = ? WHERE player_uuid = ? AND pb_id = ?;";
+            
+            try (Connection conn = dataSource.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setBytes(1, newState);
+                stmt.setString(2, playerUuid);
+                stmt.setString(3, pbId);
+                int rowsAffected = stmt.executeUpdate();
+                
+                if (rowsAffected == 0) {
+                    logger.log(Level.WARNING, this.getClass().getSimpleName() + ": No record updated. Player UUID: " + playerUuid + ", PB ID: " + pbId);
+                } else if (ConfigManager.getInstance().isDebug()) {
+                    logger.log(Level.INFO, this.getClass().getSimpleName() + ": Updated state in plunder_state for Player UUID: " + playerUuid + ", PB ID: " + pbId);
+                }
+            } catch (SQLException e) {
+                logger.log(Level.SEVERE, this.getClass().getSimpleName() + ": Failed to update state in plunder_state for Player UUID: " + playerUuid + ", PB ID: " + pbId, e);
+            }
+        });
+
+        PlunderManager.getInstance().removeOpenPlunder(UUID.fromString(playerUuid));
     }
 
     public void deletePlunderBlocksByIdsAsync(List<String> blockIds) {
