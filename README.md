@@ -61,7 +61,29 @@ messages:
 
 ## Commands
 
+![/gp add](assets/commands/AddCommand.png)
+- ```-ignoreRestock``` : Optional flag when added will prevent the plunder from being restocked.
 
+After executing the command you will be prompted to select the container to add:
+
+![Add Request](assets/commands/AddCommandRequest.png)
+
+**Success Response:**
+
+![Add Request](assets/commands/AddCommandSuccess.png)
+
+**Unsuccessful Response:**
+
+![Add Request](assets/commands/AddCommandError.png)
+
+**Actual error will vary*
+
+![/gp restock](assets/commands/RestockCommand.png)
+- ```all``` : Will restock all plunders on the server
+- ```<World>``` : Will restock all plunders in a specified world if it exists.
+
+![/gp remove](assets/commands/RemoveCommand.png)
+- ```<World>``` : Will remove all plunders in a specified world if it exists.
 
 ## FAQ
 - **Q: How do I add a custom LootTable onto a plunder?**
