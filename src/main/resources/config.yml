@@ -16,7 +16,7 @@ datasource:
   # Setting the value to high can cause just as many performance issues as not high enough. Needs to be dialed in.
   # This is the formula given from the developer of HikariCP: connections = ((core_count * 2) + effective_spindle_count)
   # For more information - https://github.com/brettwooldridge/HikariCP/wiki/About-Pool-Sizing#connections--core_count--2--effective_spindle_count
-  poolSize: 50  
+  poolSize: 10  
 
 debug:
   enabled: false
