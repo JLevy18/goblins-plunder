@@ -3,45 +3,30 @@
 This plugin was created for the BlockGame MMO server (IP: mc.blockgame.info). 
 It allows containers to serve instanced loot to players. Meaning, that each player sees a personal version of the loot.
 
-### Prerequisites
-- MySQL DB
-### Features
+## Features
 - Supported Containers
   - Single Chest
   - Barrel
-  - Any block with an inventory (i.e brewing stands, dispensers, hoppers)
-    - Technically these blocks will add to the database and function.
-    - They do not have a custom interface that would differ from the standard Chest.
-    - Meaning, they always open with a chest-sized inventory. 
-- Generated Structures
-  - Automatically add containers from generated structures to the database.
-  - Minecart chests included.
-- Manually add loot containers
-  - Cannot manually add minecart chests.
-- Add an optional vanilla LootTable on the container
-- Make loot invincible from destruction
+- Generated Structures (***plunder.generated-structures.enabled***)
+  - Automatically add plunder when structures are generated **Minecart chests included*
+  - This feature is only enabled for whitelisted worlds (***plunder.generated-structures.world-whitelist***)
+- Grief protection (***plunder.invincible***)
   - Protects against breaking and exploding
   - If disabled, the container will break and drop nothing.
-- Restock all loot or restock loot by world
+  - permission: ***goblinsplunder.admin***
+    - This permission will bypass grief protection
 
-### Planned Features
-- Double chests
-- Caching database calls
-- Query Revamp
-  - Restock by LootTable
-  - Restock by location
-  - Add by location
-- Config field to add/ensure a list of plunders is in the database on start
 
-### Possible Features
-- Custom LootTables
-- All blocks lootable
-- Loot Events
-  - Care Packages
-  - King of the Hill
- 
+## Installation
+### Prerequisite
+- MySQL DB
+
+**Option 1:** Place the jar into the plugin folder of the server and start the server. This will generate the config file. Within the config.yml file add the proper database connection information along with any other configurations and restart the server.
+
+**Option 2:** Create a folder in the plugin folder of the server called ```GoblinsPlunder```. Inside this folder create a file called ```config.yml``` and copy the contents below into it. Update the file with the proper database connection information along with any other configurations and start the server.
+
+
 ### config.yml
-
 ```
 datasource:
   host: "127.0.0.1"
@@ -55,7 +40,7 @@ datasource:
   # Setting the value to high can cause just as many performance issues as not high enough. Needs to be dialed in.
   # This is the formula given from the developer of HikariCP: connections = ((core_count * 2) + effective_spindle_count)
   # For more information - https://github.com/brettwooldridge/HikariCP/wiki/About-Pool-Sizing#connections--core_count--2--effective_spindle_count
-  poolSize: 50
+  poolSize: 10
 
 debug:
   enabled: false
@@ -75,11 +60,16 @@ messages:
     title: "&5Plunder"
 ```
 
-### FAQ
-- Q: How do I change the items that come from a LootTable?
-  - A: Currently, there is no support for custom LootTables. A workaround for this is to use a datapack to modify the vanilla LootTables.
-- Q: How do I connect to my database?
-  - A: When loading the plugin for the first time it will create the config with fields to enter the database connection information.
+## Commands
+
+
+
+## FAQ
+- **Q: How do I add a custom LootTable onto a plunder?**
+  - **A:** The plugin will prefer to use the LootTable that is currently on the container when using ```/gp add```. Some important things to note here. Minecraft consumes the LootTable when a container is opened, so, if you would like the LootTable to be added into the database you need to ensure that the chest has not yet been opened when you use ```/gp add``` on it.
+- **Q: How do I add a custom LootTable onto the plunders in generated structures?**
+  - **A:** There is no built-in feature within the plugin to achieve this effect. However, the plugin prefers to use a LootTable if the container has one on it. Generated structures all have vanilla LootTables on them. A workaround to achieve this effect would be to add a datapack to your server that modifies the vanilla LootTables
+
 
 
  
