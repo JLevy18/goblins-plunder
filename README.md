@@ -89,7 +89,7 @@ After executing the command you will be prompted to select the container to add:
 - **Q: How do I add a custom LootTable onto a plunder?**
   - **A:** The plugin will prefer to use the LootTable that is currently on the container when using ```/gp add```. Some important things to note here. Minecraft consumes the LootTable when a container is opened, so, if you would like the LootTable to be added into the database you need to ensure that the chest has not yet been opened when you use ```/gp add``` on it.
 - **Q: How do I add a custom LootTable onto the plunders in generated structures?**
-  - **A:** There is no built-in feature within the plugin to achieve this effect. However, the plugin prefers to use a LootTable if the container has one on it. Generated structures all have vanilla LootTables on them. A workaround to achieve this effect would be to add a datapack to your server that modifies the vanilla LootTables
+  - **A:** There is no built-in feature within the plugin to achieve this effect. However, the plugin prefers to use a LootTable if the container has one on it. Generated structures all have vanilla LootTables on them. A workaround to achieve this effect would be to add a datapack to your server that modifies the vanilla LootTables. **OR** Use another plugin that modifies the generated-structures LootTable
 
 
 
