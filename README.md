@@ -18,6 +18,9 @@ It allows containers to serve instanced loot to players. Meaning, that each play
 
 
 ## Installation
+### Compatability
+- Requires Spigot 1.18.2-R0.1-SNAPSHOT
+- This was also tested for Minecraft version 1.20.2, however, it is missing an optimization that was added to the spigot api in this version. Minecraft versions 1.20.2+ may experience performance issues
 ### Prerequisite
 - MySQL DB
 
