@@ -63,7 +63,7 @@ messages:
 ```
 
 ## Commands
-- If a tab-complete option is shown _italisized_ (ex. _<World>_) that signifies this is a parameter that can be different per use case. It is intended that you replace _<Parameter>_ with whatever the name is suggesting.
+- If a tab-complete option is shown _italisized_ (ex. _<World<World>>_) that signifies this is a parameter that can be different per use case. It is intended that you replace _<Parameter>_ with whatever the name is suggesting.
 
 ![/gp add](assets/commands/AddCommand.png)
 - ```-ignoreRestock``` : Optional flag when added will prevent the plunder from being restocked.
